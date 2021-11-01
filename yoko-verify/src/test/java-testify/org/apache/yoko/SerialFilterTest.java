@@ -25,6 +25,7 @@ import testify.iiop.annotation.ConfigureServer.RemoteImpl;
 
 import java.io.InvalidClassException;
 import java.io.Serializable;
+import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -115,5 +116,16 @@ public class SerialFilterTest {
                 // played for and got
             }
         }
+    }
+
+    @Test
+    public void testSendingOverlyWideObjectGraph() throws Throwable {
+        Object[] arr = new Object[24];
+        Arrays.fill(arr, new Object());
+        final int maxbytes = 2047;
+        final int arrLength = 16;
+        long[][] data = new long[(maxbytes + 1) / (Long.SIZE/Byte.SIZE) / arrLength][];
+        for (int i = 0; i < data.length; i++) data[i] = new long[arrLength];
+
     }
 }
