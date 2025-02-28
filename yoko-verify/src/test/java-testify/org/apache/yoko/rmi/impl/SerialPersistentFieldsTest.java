@@ -29,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectOutputStream.PutField;
 import java.io.ObjectStreamField;
 import java.io.Serializable;
+import java.rmi.Remote;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +42,7 @@ import org.omg.CORBA.ORB;
 
 import acme.AbstractInterface;
 import acme.AbstractValue;
+import acme.RemoteStringValue;
 import acme.StringValue;
 import testify.iiop.annotation.ConfigureOrb;
 
@@ -144,14 +146,15 @@ public abstract class SerialPersistentFieldsTest implements Serializable {
                 new ObjectStreamField("abstractValue", AbstractInterface.class),
                 new ObjectStreamField("valueInterface", AbstractValue.class),
                 new ObjectStreamField("valueClass", StringValue.class),
-                new ObjectStreamField("anyValue", Serializable.class)
+                new ObjectStreamField("anyValue", Serializable.class),
+                new ObjectStreamField("remoteValue", RemoteStringValue.class)
         };
         private static final List<String> FIELD_NAMES = Stream.of(serialPersistentFields).map(ObjectStreamField::getName).collect(toUnmodifiableList());
 
         private void writeObject(ObjectOutputStream out) throws IOException {
             System.out.println("### writeObject() called");
             PutField fields = out.putFields();
-            FIELD_NAMES.forEach(name -> fields.put(name, new StringValue(name)));
+            FIELD_NAMES.stream().forEach(name -> fields.put(name, new RemoteStringValue(name)));
             out.writeFields();
         }
 
