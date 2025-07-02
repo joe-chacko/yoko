@@ -40,10 +40,10 @@ import static org.apache.yoko.util.rofl.Rofl.RemoteOrb.NO_DATA;
  * and referred to only when marshalling data.
  */
 public interface Rofl extends Serializable {
-    Rofl NONE = new NoRofl();
+    Rofl NONE = new None();
     enum RemoteOrb {
         /** The IBM Java ORB */
-        IBM(0x49424D0A, 0x49424D12, IbmRofl::new),
+        IBM(0x49424D0A, 0x49424D12, IbmPartnerVersion::new),
         BAD,
         NO_DATA
         ;
@@ -63,49 +63,47 @@ public interface Rofl extends Serializable {
                 return ctor.apply(data);
             } catch (Throwable t) {
                 Logger.getLogger(Rofl.class.getName() + "." + name()).log(WARNING, "Failed to create ROFL for remote ORB of type " + this, t);
-                return new BadRofl(data, t);
+                return new Bad(data, t);
             }
         }
     }
     RemoteOrb type();
-}
 
-class IbmRofl implements Rofl{
-    private static final long serialVersionUID = 1L;
-    public final short major, minor, extended;
-    IbmRofl(byte[] data) {
-        if (data.length != 8) {
-            major = minor = extended = -1;
-            return;
+    final class IbmPartnerVersion implements Rofl{
+        private static final long serialVersionUID = 1L;
+        public final short major, minor, extended;
+        IbmPartnerVersion(byte[] data) {
+            if (data.length != 8) {
+                major = minor = extended = -1;
+                return;
+            }
+            int i = 0;
+            // 1 byte boolean: true iff littleEndian - ignore since Java is big-endian
+            i++;
+            // 1 byte padding - ignore
+            i++;
+            // extended short
+            extended = (short)(((data[i++] & 0xFF) << 8) | (data[i++] & 0xFF));
+            // major short
+            major = (short)(((data[i++] & 0xFF) << 8) | (data[i++] & 0xFF));
+            // minor short
+            minor = (short)(((data[i++] & 0xFF) << 8) | (data[i++] & 0xFF));
         }
-        int i = 0;
-        // 1 byte boolean: true iff littleEndian - ignore since Java is big-endian
-        i++;
-        // 1 byte padding - ignore
-        i++;
-        // extended short
-        extended = (short)(((data[i++] & 0xFF) << 8) | (data[i++] & 0xFF));
-        // major short
-        major = (short)(((data[i++] & 0xFF) << 8) | (data[i++] & 0xFF));
-        // minor short
-        minor = (short)(((data[i++] & 0xFF) << 8) | (data[i++] & 0xFF));
+        public RemoteOrb type() { return IBM; }
+        public String toString() { return String.format("IBM JAVA ORB[major=%04X minor=%04x, extended=%04X]", major, minor, extended); }
     }
-    public RemoteOrb type() { return IBM; }
-    public String toString() { return String.format("IBM JAVA ORB[major=%04X minor=%04x, extended=%04X]", major, minor, extended); }
-}
 
-class BadRofl implements Rofl {
-    private static final long serialVersionUID = 1L;
-    byte[] data;
-    Throwable cause;
-    BadRofl(byte[] data, Throwable cause) {
-        this.data = data == null ? null : copyOf(data, data.length);
+    final class Bad implements Rofl {
+        private static final long serialVersionUID = 1L;
+        byte[] data;
+        Throwable cause;
+        Bad(byte[] data, Throwable cause) { this.data = data == null ? null : copyOf(data, data.length); }
+        public RemoteOrb type()  { return BAD; }
+        public String toString() { return String.format("UNKNOWN ORB[%s]", HexConverter.octetsToAscii(data)); }
     }
-    public RemoteOrb type()  { return BAD; }
-    public String toString() { return String.format("UNKNOWN ORB[%s]", HexConverter.octetsToAscii(data)); }
-}
 
-class NoRofl implements Rofl {
-    public RemoteOrb type() { return NO_DATA; }
-    public String toString() { return "NONE"; }
+    final class None implements Rofl {
+        public RemoteOrb type() { return NO_DATA; }
+        public String toString() { return "NONE"; }
+    }
 }
