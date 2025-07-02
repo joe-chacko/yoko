@@ -67,8 +67,7 @@ subprojects { sp ->
 
   repositories {
     mavenLocal()
-    maven { url "https://repository.apache.org/snapshots" }
-    maven { url "https://repo.maven.apache.org/maven2" }
+    mavenCentral()
   }
 
   configurations {
