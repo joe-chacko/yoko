@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,20 @@
  */
 package test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import java.util.Properties;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.omg.CORBA.NO_IMPLEMENT;
 import org.omg.CORBA.ORB;
 
+import java.util.Properties;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 public class OrbInitTest {
-    @BeforeClass
+    @BeforeAll
     public static void logWhereTheOrbClassComesFromAtRuntime() {
         System.out.println("ORB API class = " + ORB.class);
         System.out.println("ORB API class loader = " + ORB.class.getClassLoader());
@@ -76,9 +77,9 @@ public class OrbInitTest {
         assertThat(orb, is(notNullValue()));
     }
 
-    @Test(expected = NO_IMPLEMENT.class)
+    @Test
     public void testORBSingletonDestroy() {
-        ORB.init().destroy();
+        Assertions.assertThrows(NO_IMPLEMENT.class, ORB.init()::destroy);
     }
 
     @Test

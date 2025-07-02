@@ -1,5 +1,22 @@
+# Copyright 2025 IBM Corporation and others.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an \"AS IS\" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 -runfw: org.apache.felix.framework
 -runee: JavaSE-1.8
+-tester: biz.aQute.tester.junit-platform
 
 # enable logging for yoko
 logprops=${workspace}/test-osgi/yoko-logging.props
@@ -8,8 +25,14 @@ logprops=${workspace}/test-osgi/yoko-logging.props
 # We don't have any resolution happening here so
 # we must list all the bundles we need explicitly.
 -runbundles: \
-  osgi.enroute.junit.wrapper,         \
-  osgi.enroute.hamcrest.wrapper,      \
+  junit-platform-launcher,            \
+  junit-jupiter-api,                  \
+  junit-jupiter-engine,               \
+  junit-jupiter-params,               \
+  junit-platform-commons,             \
+  junit-platform-engine,              \
+  org.opentest4j,                     \
+  org.hamcrest,                       \
   org.apache.yoko.osgi,               \
   org.apache.yoko.spec-corba,         \
   org.apache.yoko.rmi-spec,           \
@@ -18,4 +41,6 @@ logprops=${workspace}/test-osgi/yoko-logging.props
   org.apache.yoko.util,               \
   org.apache.bcel,                    \
   org.apache.commons.lang3,           \
+  testify,                            \
+  testify-iiop,                       \
   test-osgi
