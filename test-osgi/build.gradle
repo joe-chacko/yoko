@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,13 @@ repositories {
 apply plugin: "biz.aQute.bnd.builder"
 
 dependencies {
-  implementation 'org.osgi:osgi.enroute.junit.wrapper:4.12.0'
-  implementation 'org.osgi:osgi.enroute.hamcrest.wrapper:1.3.0'
-  runtimeOnly 'org.apache.felix:org.apache.felix.framework:7.0.3'
-  // runtime 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
+  implementation "org.hamcrest:hamcrest:2.1"
+  implementation "org.junit.jupiter:junit-jupiter:5.9.0"
   implementation project(":yoko-spec-corba")
-  runtimeOnly project(':yoko-core')
+  implementation project(":testify")
+  implementation project(":testify-iiop")
+  runtimeOnly "org.apache.felix:org.apache.felix.framework:7.0.3"
+  runtimeOnly 'org.junit.platform:junit-platform-launcher:1.9.3'
 }
 
 import aQute.bnd.gradle.TestOSGi
