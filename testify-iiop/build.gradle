@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
  */
 
 dependencies {
-  implementation 'junit:junit:4.12'
   implementation "org.hamcrest:hamcrest:2.1"
   implementation "org.junit.jupiter:junit-jupiter:5.9.0"
   implementation project(':yoko-spec-corba')
