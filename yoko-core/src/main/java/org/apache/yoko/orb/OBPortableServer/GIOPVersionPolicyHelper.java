@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,21 @@
 package org.apache.yoko.orb.OBPortableServer;
 
 import org.apache.yoko.util.MinorCodes;
+import static org.apache.yoko.util.MinorCodes.MinorTypeMismatch;
+import static org.apache.yoko.util.MinorCodes.MinorReadUnsupported;
+import static org.apache.yoko.util.MinorCodes.MinorWriteUnsupported;
+import static org.apache.yoko.util.MinorCodes.MinorIncompatibleObjectType;
+
+import org.omg.CORBA.Any;
+import org.omg.CORBA.BAD_OPERATION;
+import org.omg.CORBA.BAD_PARAM;
+import static org.omg.CORBA.CompletionStatus.COMPLETED_NO;
+import org.omg.CORBA.MARSHAL;
+import org.omg.CORBA.Object;
+import org.omg.CORBA.ORB;
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.portable.InputStream;
+import org.omg.CORBA.portable.OutputStream;
 
 //
 // IDL:orb.yoko.apache.org/OBPortableServer/GIOPVersionPolicy:1.0
@@ -25,32 +40,32 @@ import org.apache.yoko.util.MinorCodes;
 final public class GIOPVersionPolicyHelper
 {
     public static void
-    insert(org.omg.CORBA.Any any, GIOPVersionPolicy val)
+    insert(Any any, GIOPVersionPolicy val)
     {
         any.insert_Object(val, type());
     }
 
     public static GIOPVersionPolicy
-    extract(org.omg.CORBA.Any any)
+    extract(Any any)
     {
         if(any.type().equivalent(type()))
             return narrow(any.extract_Object());
 
 
-        throw new org.omg.CORBA.BAD_OPERATION(
+        throw new BAD_OPERATION(
             MinorCodes
-                    .describeBadOperation(MinorCodes.MinorTypeMismatch),
-            MinorCodes.MinorTypeMismatch, org.omg.CORBA.CompletionStatus.COMPLETED_NO);
+                    .describeBadOperation(MinorTypeMismatch),
+            MinorTypeMismatch, COMPLETED_NO);
     }
 
-    private static org.omg.CORBA.TypeCode typeCode_;
+    private static TypeCode typeCode_;
 
-    public static org.omg.CORBA.TypeCode
+    public static TypeCode
     type()
     {
         if(typeCode_ == null)
         {
-            org.omg.CORBA.ORB orb = org.omg.CORBA.ORB.init();
+            ORB orb = ORB.init();
             typeCode_ = ((org.omg.CORBA_2_4.ORB)orb).create_local_interface_tc(id(), "GIOPVersionPolicy");
         }
 
@@ -64,27 +79,27 @@ final public class GIOPVersionPolicyHelper
     }
 
     public static GIOPVersionPolicy
-    read(org.omg.CORBA.portable.InputStream in)
+    read(InputStream in)
     {
-        throw new org.omg.CORBA.MARSHAL(
+        throw new MARSHAL(
                 MinorCodes
-                        .describeMarshal(MinorCodes.MinorReadUnsupported),
-                MinorCodes.MinorReadUnsupported,
-                org.omg.CORBA.CompletionStatus.COMPLETED_NO);
+                        .describeMarshal(MinorReadUnsupported),
+                MinorReadUnsupported,
+                COMPLETED_NO);
     }
 
     public static void
-    write(org.omg.CORBA.portable.OutputStream out, GIOPVersionPolicy val)
+    write(OutputStream out, GIOPVersionPolicy val)
     {
-        throw new org.omg.CORBA.MARSHAL(
+        throw new MARSHAL(
                 MinorCodes
-                        .describeMarshal(MinorCodes.MinorWriteUnsupported),
-                MinorCodes.MinorWriteUnsupported,
-                org.omg.CORBA.CompletionStatus.COMPLETED_NO);
+                        .describeMarshal(MinorWriteUnsupported),
+                MinorWriteUnsupported,
+                COMPLETED_NO);
     }
 
     public static GIOPVersionPolicy
-    narrow(org.omg.CORBA.Object val)
+    narrow(Object val)
     {
         try
         {
@@ -94,9 +109,9 @@ final public class GIOPVersionPolicyHelper
         {
         }
 
-        throw new org.omg.CORBA.BAD_PARAM(MinorCodes
-            .describeBadParam(MinorCodes.MinorIncompatibleObjectType),
-            MinorCodes.MinorIncompatibleObjectType,
-            org.omg.CORBA.CompletionStatus.COMPLETED_NO);
+        throw new BAD_PARAM(MinorCodes
+            .describeBadParam(MinorIncompatibleObjectType),
+            MinorIncompatibleObjectType,
+            COMPLETED_NO);
     }
 }
