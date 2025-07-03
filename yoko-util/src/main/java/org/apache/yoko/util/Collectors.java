@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.apache.yoko.util;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -38,6 +39,16 @@ public enum Collectors {
             public BiConsumer<EnumSet<E>, E> accumulator() { return EnumSet::add; }
             public BinaryOperator<EnumSet<E>> combiner() { return (a, b) -> {a.addAll(b); return a;}; }
             public Function<EnumSet<E>, Set<E>> finisher() { return Collections::unmodifiableSet; }
+            public Set<Characteristics> characteristics() { return EnumSet.of(UNORDERED); }
+        };
+    }
+
+    public static <K, T> Collector<T, ?, Map<K, T>> toUnmodifiableMap(Supplier<Map<K,T>> supplier, Function<T, K> keyFunction) {
+        return new Collector<T, Map<K, T>, Map<K, T>>() {
+            public Supplier<Map<K, T>> supplier() { return supplier; }
+            public BiConsumer<Map<K, T>, T> accumulator() { return (m, t) -> m.put(keyFunction.apply(t), t); }
+            public BinaryOperator<Map<K, T>> combiner() { return (m1, m2) -> { m1.putAll(m2); return m1; }; }
+            public Function<Map<K, T>, Map<K, T>> finisher() { return Collections::unmodifiableMap; }
             public Set<Characteristics> characteristics() { return EnumSet.of(UNORDERED); }
         };
     }

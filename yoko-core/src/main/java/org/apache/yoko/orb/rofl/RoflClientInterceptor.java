@@ -18,10 +18,9 @@
 package org.apache.yoko.orb.rofl;
 
 import org.apache.yoko.util.rofl.Rofl;
+import org.apache.yoko.util.rofl.RoflHelper;
 import org.apache.yoko.util.rofl.RoflThreadLocal;
-import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
-import org.omg.IOP.TaggedComponent;
 import org.omg.PortableInterceptor.ClientRequestInfo;
 import org.omg.PortableInterceptor.ClientRequestInterceptor;
 import org.omg.PortableInterceptor.ForwardRequest;
@@ -31,23 +30,12 @@ import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import static org.apache.yoko.util.MinorCodes.MinorInvalidComponentId;
-import static org.apache.yoko.util.rofl.Rofl.RemoteOrb.IBM;
-
 public class RoflClientInterceptor extends LocalObject implements ClientRequestInterceptor {
     private static final String NAME = RoflClientInterceptor.class.getName();
 
     @Override
     public void send_request(ClientRequestInfo ri) throws ForwardRequest {
-        Rofl rofl = Rofl.NONE;
-        try {
-            TaggedComponent tc = ri.get_effective_component(IBM.tagComponentId);
-            rofl = IBM.createRofl(tc.component_data);
-        } catch (BAD_PARAM e) {
-            if (e.minor != MinorInvalidComponentId) {
-                throw e;
-            }
-        }
+        Rofl rofl = RoflHelper.createFromTaggedComponent(ri);
         RoflThreadLocal.push(rofl);
     }
 
