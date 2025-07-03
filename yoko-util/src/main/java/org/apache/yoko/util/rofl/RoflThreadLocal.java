@@ -25,7 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Provides a stack-based approach to track the ROFL settings in effect on the current thread.
+ * Provides a stack-based approach to track the ROFL settings in effect for the current request.
  */
 public final class RoflThreadLocal {
     private static final Logger LOGGER = Logger.getLogger(RoflThreadLocal.class.getName());
@@ -62,8 +62,7 @@ public final class RoflThreadLocal {
 
     public static SimplyCloseable push(Rofl rofl) {
         final Stack info = threadLocalStack.get();
-        if (LOGGER.isLoggable(Level.FINER))
-            LOGGER.finer(String.format("ROFL thread local version pushed onto stack: %s", rofl));
+        if (LOGGER.isLoggable(Level.FINER)) LOGGER.finer(String.format("ROFL thread local version pushed onto stack: %s", rofl));
         info.head = new Frame(rofl, info.head);
         return RoflThreadLocal::pop;
     }
@@ -80,15 +79,13 @@ public final class RoflThreadLocal {
     public static Rofl pop() {
         final Stack info = threadLocalStack.get();
         final Rofl rofl = info.head.value;
-        if (LOGGER.isLoggable(Level.FINER))
-            LOGGER.finer(String.format("YASF thread local version popped from stack: %s", rofl));
+        if (LOGGER.isLoggable(Level.FINER)) LOGGER.finer(String.format("ROFL thread local version popped from stack: %s", rofl));
         info.head = info.head.prev;
         return rofl;
     }
 
     public static void reset() {
-        if (LOGGER.isLoggable(Level.FINER))
-            LOGGER.finer("YASF thread local stack reset");
+        if (LOGGER.isLoggable(Level.FINER)) LOGGER.finer("ROFL thread local stack reset");
         threadLocalStack.remove();
     }
 }

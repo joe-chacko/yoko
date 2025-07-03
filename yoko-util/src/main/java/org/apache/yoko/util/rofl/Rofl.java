@@ -17,14 +17,21 @@
  */
 package org.apache.yoko.util.rofl;
 
-import org.apache.yoko.util.HexConverter;
+import org.omg.IOP.ServiceContext;
+import org.omg.IOP.TaggedComponent;
 
 import java.io.Serializable;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
 import static java.util.Arrays.copyOf;
 import static java.util.logging.Level.WARNING;
+import static org.apache.yoko.util.Collectors.toUnmodifiableMap;
+import static org.apache.yoko.util.HexConverter.octetsToAscii;
 import static org.apache.yoko.util.rofl.Rofl.RemoteOrb.BAD;
 import static org.apache.yoko.util.rofl.Rofl.RemoteOrb.IBM;
 import static org.apache.yoko.util.rofl.Rofl.RemoteOrb.NO_DATA;
@@ -41,38 +48,76 @@ import static org.apache.yoko.util.rofl.Rofl.RemoteOrb.NO_DATA;
  */
 public interface Rofl extends Serializable {
     Rofl NONE = new None();
+
     enum RemoteOrb {
         /** The IBM Java ORB */
-        IBM(0x49424D0A, 0x49424D12, IbmPartnerVersion::new),
+        IBM(0x49424D0A, IbmPartnerVersion::new, 0x49424D12, IbmPartnerVersion::new),
         BAD,
         NO_DATA
         ;
+        // NOTE: enum static fields are initialized AFTER enum members, and therefore after the constructor
+        /** Members that do not represent a real remote ORB */
+        private static final EnumSet<RemoteOrb> SPECIAL_REMOTE_ORBS = EnumSet.of(BAD, NO_DATA);
+        /** Members that do represent a real remote ORB */
+        private static final EnumSet<RemoteOrb> KNOWN_REMOTE_ORBS = EnumSet.complementOf(SPECIAL_REMOTE_ORBS);
+        /** Real remote ORBs indexed by service context ID */
+        private static final Map<Integer, RemoteOrb> SC_ID_TO_RO_MAP = KNOWN_REMOTE_ORBS.stream()
+                .collect(toUnmodifiableMap(HashMap::new, ro -> ro.serviceContextId));
 
         public final Integer tagComponentId;
         public final Integer serviceContextId;
-        private final Function<byte[], Rofl> ctor;
-        RemoteOrb() { this(null, null, null); }
-        RemoteOrb(Integer tagComponentId, Integer serviceContextId, Function<byte[], Rofl> ctor) {
+        private final Function<TaggedComponent, Rofl> tcCtor;
+        private final Function<ServiceContext, Rofl> scCtor;
+        RemoteOrb() { this(null, null, null, null); }
+
+        RemoteOrb(
+                Integer tagComponentId, Function<TaggedComponent, Rofl> tcCtor,
+                Integer serviceContextId, Function<ServiceContext, Rofl> scCtor) {
             this.tagComponentId = tagComponentId;
             this.serviceContextId = serviceContextId;
-            this.ctor = ctor;
+            this.tcCtor = tcCtor;
+            this.scCtor = scCtor;
         }
 
-        public Rofl createRofl(byte[] data) {
+        Rofl createRofl(TaggedComponent tc) {
             try {
-                return ctor.apply(data);
+                return tcCtor.apply(tc);
             } catch (Throwable t) {
                 Logger.getLogger(Rofl.class.getName() + "." + name()).log(WARNING, "Failed to create ROFL for remote ORB of type " + this, t);
-                return new Bad(data, t);
+                return new Bad(tc, t);
+            }
+
+        }
+
+        Rofl createRofl(ServiceContext sc) {
+            try {
+                return scCtor.apply(sc);
+            } catch (Throwable t) {
+                Logger.getLogger(Rofl.class.getName() + "." + name()).log(WARNING, "Failed to create ROFL for remote ORB of type " + this, t);
+                return new Bad(sc, t);
             }
         }
+
+        /**
+         * Find the enum member for the given service context.
+         * @param sc the service context for one of the known remote ORBs
+         * @return the relevant enum member or <code>null</code> if the service context did not match any known remote ORB
+         */
+        static Optional<RemoteOrb> of(ServiceContext sc) { return Optional.of(sc.context_id).map(SC_ID_TO_RO_MAP::get); }
     }
+
     RemoteOrb type();
+
+    enum SourceType { SERVICE_CONTEXT, TAGGED_COMPONENT }
 
     final class IbmPartnerVersion implements Rofl{
         private static final long serialVersionUID = 1L;
+        public final SourceType sourceType;
         public final short major, minor, extended;
-        IbmPartnerVersion(byte[] data) {
+        IbmPartnerVersion(ServiceContext sc) { this(SourceType.SERVICE_CONTEXT, sc.context_data); }
+        IbmPartnerVersion(TaggedComponent tc) { this(SourceType.TAGGED_COMPONENT, tc.component_data); }
+        private IbmPartnerVersion(SourceType sourceType, byte[] data) {
+            this.sourceType = sourceType;
             if (data.length != 8) {
                 major = minor = extended = -1;
                 return;
@@ -95,11 +140,24 @@ public interface Rofl extends Serializable {
 
     final class Bad implements Rofl {
         private static final long serialVersionUID = 1L;
-        byte[] data;
-        Throwable cause;
-        Bad(byte[] data, Throwable cause) { this.data = data == null ? null : copyOf(data, data.length); }
+        final SourceType sourceType;
+        final int id;
+        final byte[] data;
+        final Throwable cause;
+        Bad(ServiceContext sc, Throwable cause) {
+            this.sourceType = SourceType.SERVICE_CONTEXT;
+            this.id = sc.context_id;
+            this.data = sc.context_data == null ? null : copyOf(sc.context_data, sc.context_data.length);
+            this.cause = cause;
+        }
+        Bad(TaggedComponent tc, Throwable cause) {
+            this.sourceType = SourceType.TAGGED_COMPONENT;
+            this.id = tc.tag;
+            this.data = tc.component_data == null ? null : copyOf(tc.component_data, tc.component_data.length);
+            this.cause = cause;
+        }
         public RemoteOrb type()  { return BAD; }
-        public String toString() { return String.format("UNKNOWN ORB[%s]", HexConverter.octetsToAscii(data)); }
+        public String toString() { return String.format("UNKNOWN ORB[%s(0x%08x) data=%s cause=%s]", sourceType, id, octetsToAscii(data), cause); }
     }
 
     final class None implements Rofl {

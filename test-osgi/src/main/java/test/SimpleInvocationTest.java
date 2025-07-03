@@ -24,6 +24,7 @@ import testify.iiop.annotation.ConfigureServer.RemoteImpl;
 import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -42,6 +43,13 @@ public class SimpleInvocationTest {
     public void testSendString(Echo stub) throws Exception {
         String expected = "Lorem ipsum dolor sit";
         String actual = stub.echo(expected);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testSendDate(Echo stub) throws Exception {
+        Date expected = new Date(0xcafebabefeedfaceL);
+        Date actual = stub.echo(expected);
         assertEquals(expected, actual);
     }
 }
