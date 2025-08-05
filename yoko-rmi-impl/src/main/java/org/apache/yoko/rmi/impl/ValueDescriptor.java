@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.security.AccessController.doPrivileged;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.yoko.util.Exceptions.as;
@@ -182,7 +183,7 @@ class ValueDescriptor extends TypeDescriptor {
 
         }
 
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+        doPrivileged(new PrivilegedAction<Object>() {
             public Object run() {
 
                 for (Class<?> curr = type; curr != null; curr = curr.getSuperclass()) {
@@ -431,8 +432,8 @@ class ValueDescriptor extends TypeDescriptor {
     public void writeValue(final OutputStream out, final Serializable value) {
         try {
 
-            ObjectWriter writer = (ObjectWriter) AccessController.doPrivileged(new PrivilegedAction() {
-                public Object run() {
+            ObjectWriter writer = doPrivileged(new PrivilegedAction<ObjectWriter>() {
+                public ObjectWriter run() {
                     try {
                         return new CorbaObjectWriter(out, value);
                     } catch (IOException ex) {
@@ -523,8 +524,8 @@ class ValueDescriptor extends TypeDescriptor {
         offsetMap.put(offset, value);
 
         try {
-            ObjectReader reader = (ObjectReader) AccessController.doPrivileged(new PrivilegedAction() {
-                public Object run() {
+            ObjectReader reader = doPrivileged(new PrivilegedAction<ObjectReader>() {
+                public ObjectReader run() {
                     try {
                         return new CorbaObjectReader(in, offsetMap, value);
                     } catch (IOException ex) {
