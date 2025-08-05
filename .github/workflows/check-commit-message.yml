@@ -1,4 +1,4 @@
-# Copyright 2024 IBM Corporation and others.
+# Copyright 2025 IBM Corporation and others.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ on:
 jobs:
   check-commit-message:
     name: Check Commit Message
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Check Commit Type
         uses: gsactions/commit-message-checker@v2
