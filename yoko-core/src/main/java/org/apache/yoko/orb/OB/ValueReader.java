@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -207,8 +207,25 @@ public final class ValueReader {
                 return reader_.readRMIValue(h, h.ids[0], clz_);
             }
 
+            // We have some hints by this point what has been marshalled.
+            // There is the declared type of the field, but this is probably an interface.
+            // There is the rep id, but it's not an RMI value.
+            // Surely it is a WString value?!
+
+            final Serializable result;
+            if (WStringValueHelper.id().equals(h.ids[0])) {
+                // It is a wstring - read it and
+                result = is_.read_wstring();
+                reader_.addInstance(h.headerPos, result);
+                return result;
+            }
+
+            // Apparently this could be a Streamable or an IDL custom marshal value type.
+            // Trace it out because it seems unlikely
+            MARSHAL_LOG.info(() -> "Attempting to read a value with type '" + h.ids[0] + "' into a field of type '" + clz_ + "'");
+
             try {
-                Serializable result = doPrivileged(getNoArgConstructor(clz_)).newInstance();
+                result = doPrivileged(getNoArgConstructor(clz_)).newInstance();
                 reader_.addInstance(h.headerPos, result);
                 try {
                     reader_.unmarshalValueState(result);
