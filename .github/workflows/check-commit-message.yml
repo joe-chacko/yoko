@@ -35,9 +35,9 @@ jobs:
       - name: Check Commit Type
         uses: gsactions/commit-message-checker@v2
         with:
-          pattern: '^(DEV|DOC|FMT|LOG|OPS|TFW|TST|feat|fix|refactor|perf|style|test|docs|build|ops|chore)(\([^\)]*\))?!?: [^A-Z](.*[^.])?$'
+          pattern: '^(build|ci|chore|docs|feat|fix|perf|refactor|revert|style|test)(\([^\)]*\))?!?: [^A-Z](.*[^.])?$'
           flags: 'gm'
-          error: 'Your first line has to start with a qualifier like "DEV: ". Valid qualifiers include DEV, DOC, FMT, LOG, OPS, TFW, TST, feat, fix, refactor, perf, style, test, docs, build, ops, chore'
+          error: 'Commit messages MUST follow the conventional commit style, e.g.  "fix: a bug" or "chore(deps): update BCEL version". Valid qualifiers are build, ci, chore, docs, feat, fix, perf, refactor, revert, style, or test.'
           excludeTitle: 'true' # optional: this excludes the title of a pull request
           excludeDescription: 'true' # optional: this excludes the description body of a pull request
           checkAllCommitMessages: 'true' # optional: this checks all commits associated with a pull request
