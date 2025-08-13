@@ -54,11 +54,11 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
 def gitHash = 'git rev-parse HEAD'.execute().text.trim()
 // compute git commit date and convert from author's time zone to UTC
 def gitIsoDate = 'git log -1 --date=iso-strict --pretty=format:%cd'.execute().text.trim()
-def gitIsoDateUTC = ISO_OFFSET_DATE_TIME.parse(gitIsoDate, Instant::from).toString()
+def gitIsoDateUtc = ISO_OFFSET_DATE_TIME.parse(gitIsoDate, Instant::from).toString()
 
 // set system properties for use in bundle metadata
 System.setProperty("git.hash", gitHash);
-System.setProperty("git.date", gitIsoDateUTC);
+System.setProperty("git.date", gitIsoDateUtc);
 
 /* Standard configuration for each subproject */
 subprojects { sp ->
