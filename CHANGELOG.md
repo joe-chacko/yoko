@@ -1,3 +1,8 @@
+## [v1.5.1]
+
+### Bug Fixes
+- Make bundle version OSGi compliant
+
 ## [v1.5.0]
 
 ### 🚀 Features

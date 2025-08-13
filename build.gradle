@@ -54,15 +54,25 @@ import static java.time.format.DateTimeFormatter.BASIC_ISO_DATE
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
 def gitHash = 'git rev-parse HEAD'.execute().text.trim()
-// compute git commit date and convert from author's time zone to UTC
+// compute git commit date
 def gitIsoDate = 'git log -1 --date=iso-strict --pretty=format:%cd'.execute().text.trim()
+// convert from author's time zone to UTC
 def gitIsoDateUtc = ISO_OFFSET_DATE_TIME.parse(gitIsoDate, Instant::from).atZone(ZoneOffset.UTC)
 def gitBasicDateUtc = BASIC_ISO_DATE.format(gitIsoDateUtc)
-println(gitIsoDateUtc)
+// Although SemVer2.0 prescribes '+' and '-' separators after major.minor.patch
+// OSGi mandates major.minor.patch.qualifier
+// OSGi permits '-' and '_' within the qualifier, but not at either end
+// OSGi permits no other punctuation or whitespace
+// Set the version to major.minor.patch.YYYYMMDD_GITHASH
+def yokoVersion = "1.5.1.${gitBasicDateUtc.take(8)}_${gitHash.take(10)}"
 
 // set system properties for use in bundle metadata
 System.setProperty("git.hash", gitHash);
 System.setProperty("git.date", gitIsoDateUtc.toString());
+
+task getVersion {
+  printf "Yoko version = %s%n", yokoVersion
+}
 
 /* Standard configuration for each subproject */
 subprojects { sp ->
@@ -87,12 +97,7 @@ subprojects { sp ->
 
     // to extend the project with a new property, use project.ext.<new property name>
     project.ext.symbolicName = project.name.replaceFirst("^yoko-", symbolicNamePrefix)
-    // Although SemVer2.0 prescribes '+' and '-' separators after major.minor.patch
-    // OSGi mandates major.minor.patch.qualifier
-    // OSGi permits '-' and '_' within the qualifier, but not at either end
-    // OSGi permits no other punctuation or whitespace
-    // Set the version to major.minor.patch.YYYYMMDD_GITHASH
-    version = "1.5.0.${gitBasicDateUtc.take(8)}_${gitHash.take(10)}"
+    version = yokoVersion
   }
 
   // standardise the test deps here
@@ -203,11 +208,12 @@ gradle.buildFinished {
   }
 }
 
-private static void printResults(allResults) {
-  println "\n  \n Build Summary:"
+private void printResults(allResults) {
+  if (logger.isQuietEnabled()) return
   // Max line length has to take lines from all items into account
   def maxLength = allResults*.readLines().flatten().collect { it.length() }.max()
 
+  println "\n  \n Build Summary:"
   println ",${"${"-" * maxLength}"}." // Top border
 
   println allResults.collect {
