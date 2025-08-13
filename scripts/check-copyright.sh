@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2024 IBM Corporation and others.
+# Copyright 2025 IBM Corporation and others.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -118,14 +118,21 @@
   git diff --name-only --diff-filter=D "$BASE" | sed 's/^/🫥 Ignoring deleted file: /' | log
 
   # Function to print each pathname from stdin to stdout unless it has good copyright
-  badCopyrightFilter() {
+  reportBadCopyright() {
     while read filePath; do
       [ -f "$filePath" ] || die "Cannot check copyright in non-existent file: '$filePath'"
+      # ignore markdown files
+      [ "${filePath%.md}" == "$filePath" ] || {
+        log "🫥 Ignoring markdown file: $filePath"
+        continue
+      }
+      # check for a license identifier
       grep -Eq "SPDX-License-Identifier: Apache-2.0" "$filePath" || {
         wrn "👿 License identifier not found:" "$filePath"
         echo "$filePath"
         continue
       }
+      # check for correct copyright year
       yearModified=`git log -1 --pretty=format:%cd --date=format:%Y -- "$filePath"`
       grep -Eq "Copyright $yearModified IBM Corporation and" "$filePath" && inf "😅 Copyright OK: $filePath" || {
         existingModifiedYear="$(grep -Eo 'Copyright [0-9]{4} IBM Corporation and' "$filePath" | cut -d ' ' -f 2 )"
@@ -140,7 +147,7 @@
   }
 
   inf "Checking added and modified files..."
-  FAILED=$((FAILED + $(git diff --name-only --find-copies-harder --diff-filter=AM "$BASE" | badCopyrightFilter | wc -l)))
+  FAILED=$((FAILED + $(git diff --name-only --find-copies-harder --diff-filter=AM "$BASE" | reportBadCopyright | wc -l)))
 
   # Renamed (R) and copied (C) files are more complicated.
   # They can report as less than 100% identical even when their contents are the same.
@@ -155,7 +162,7 @@
   # Check the status is R... or C... (otherwise it was parsed incorrectly).
   # Then compare the source and dest for significant differences.
   # Lastly, if they were different, check them for copyright.
-  badCopyrightFilter2() {
+  ignoreCopiesAndRenames() {
     while read status && read src && read dst
     do
       case "$status" in
@@ -165,11 +172,11 @@
         C*) isReallyDifferent "$BASE:$src" "$dst" || log "🫥 Ignoring copied file: $src -> $dst" ;;
         *) die "Unexpected status while parsing git diff output: status='$status' src='$src' dst='$dst'" ;;
       esac
-    done | badCopyrightFilter
+    done
   }
 
   inf "Checking renamed and copied files..."
   OUTPUT="$(git diff --name-status --find-copies-harder --diff-filter=CR -z "$BASE" 2>/dev/null | tr '\0' '\n')"
-  FAILED=$((FAILED + $(echo "$OUTPUT"| badCopyrightFilter2 | wc -l)))
+  FAILED=$((FAILED + $(echo "$OUTPUT"| ignoreCopiesAndRenames | reportBadCopyright | wc -l)))
   exit $FAILED
 )
