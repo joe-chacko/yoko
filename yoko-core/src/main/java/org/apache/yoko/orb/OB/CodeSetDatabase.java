@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.apache.yoko.orb.OB;
 
 import org.omg.CONV_FRAME.CodeSetComponent;
 import org.omg.CORBA.CODESET_INCOMPATIBLE;
+
+import static org.apache.yoko.orb.OB.CodeSetInfo.areCompatibleCodesets;
 
 enum CodeSetDatabase {
     ;
@@ -44,16 +46,13 @@ enum CodeSetDatabase {
         if (clientCS.native_code_set != 0 && serverCS.native_code_set != 0) {
             // Check if the native codesets are identical
             // If they are then no conversion is required
-            if (clientCS.native_code_set == serverCS.native_code_set)
-                return serverCS.native_code_set;
+            if (clientCS.native_code_set == serverCS.native_code_set) return serverCS.native_code_set;
 
             // Check if client can convert
-            if (checkCodeSetId(clientCS, serverCS.native_code_set))
-                return serverCS.native_code_set;
+            if (checkCodeSetId(clientCS, serverCS.native_code_set)) return serverCS.native_code_set;
 
             // Check if server can convert
-            if (checkCodeSetId(serverCS, clientCS.native_code_set))
-                return clientCS.native_code_set;
+            if (checkCodeSetId(serverCS, clientCS.native_code_set)) return clientCS.native_code_set;
         }
 
         // Check for common codeset that can be used for transmission
@@ -65,20 +64,10 @@ enum CodeSetDatabase {
         if (clientCS.native_code_set != 0 && serverCS.native_code_set != 0) {
             // Check compatibility by using the OSF registry,
             // use fallback codeset if compatible
-            if (isCompatible(clientCS.native_code_set, serverCS.native_code_set))
-                return fallback;
+            if (areCompatibleCodesets(clientCS.native_code_set, serverCS.native_code_set)) return fallback;
         }
 
         throw new CODESET_INCOMPATIBLE();
-    }
-
-    private static boolean isCompatible(int id1, int id2) {
-        CodeSetInfo cs1 = CodeSetInfo.forRegistryId(id1);
-        if (cs1 == null) return false;
-
-        CodeSetInfo cs2 = CodeSetInfo.forRegistryId(id2);
-
-        return cs1.isCompatibleWith(cs2);
     }
 
     private static boolean checkCodeSetId(CodeSetComponent csc, int id) {

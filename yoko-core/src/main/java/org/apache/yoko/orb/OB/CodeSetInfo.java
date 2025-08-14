@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
 package org.apache.yoko.orb.OB;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.EnumSet.complementOf;
+import static java.util.Objects.requireNonNull;
 import static org.apache.yoko.orb.OB.CharMapInfo.CM_8859_2;
 import static org.apache.yoko.orb.OB.CharMapInfo.CM_8859_3;
 import static org.apache.yoko.orb.OB.CharMapInfo.CM_8859_4;
@@ -250,6 +250,7 @@ public enum CodeSetInfo {
     private final short[] charsets;
 
     CodeSetInfo(String desc, int reg_id, int max_width, short[] charsets, CharMapInfo charMap) {
+        assert isValidCharsetsArray(charsets);
         this.description = desc;
         this.id = reg_id;
         this.max_bytes = (short)max_width;
@@ -261,17 +262,22 @@ public enum CodeSetInfo {
         this(desc, reg_id, max_width, charsets, null);
     }
 
-    public static int getRegistryIdForName(String name) {
-        Objects.requireNonNull(name);
+    /** ensure charsets array is non-null and elements are in strictly increasing sequence */
+    private static boolean isValidCharsetsArray(short[] charsets) {
+        assert null != charsets;
+        short prev = 0;
+        for (short cs: charsets) {
+            if (cs <= prev) return false;
+            prev = cs;
+        }
+        return true;
+    }
 
+    public static int getRegistryIdForName(String name) {
+        requireNonNull(name);
         // Check if codeset name is listed in registry
         // Return first match so that shortcuts can be used
-        for (final CodeSetInfo value: REGISTRY.values()) {
-            if (value.description.contains(name)) return value.id;
-        }
-
-        // Name not found
-        return NONE.id;
+        return Stream.of(CodeSetInfo.values()).filter(info -> info.description.contains(name)).findFirst().orElse(NONE).id;
     }
 
     /** @return null if registryId unknown */
@@ -284,18 +290,34 @@ public enum CodeSetInfo {
         return null == info ? NONE.description : info.description;
     }
 
-    boolean isCompatibleWith(CodeSetInfo that) {
-        if (that == null) return false;
-
-        for (short thisCharset: this.charsets) {
-            for (short thatCharset: that.charsets) {
-                // In order to be compatible in OSF terms, two codesets
-                // must have a common character set
-                if (thisCharset == thatCharset) return true;
-            }
-        }
-
-        return false;
+    /** Tests whether two codesets share any common character sets */
+    static boolean areCompatibleCodesets(int id1, int id2) {
+        CodeSetInfo cs1 = forRegistryId(id1);
+        CodeSetInfo cs2 = forRegistryId(id2);
+        return areCompatible(cs1, cs2);
     }
 
+    /** Tests whether two codesets share any common character sets */
+    static boolean areCompatible(CodeSetInfo cs1, CodeSetInfo cs2) {
+        return null != cs1 && null != cs2 && shareCommonElement(cs1.charsets, cs2.charsets);
+    }
+
+    /**
+     * Check for common elements between two *SORTED* arrays of shorts.
+     * @param left a *SORTED* array of shorts
+     * @param right another *SORTED* array of shorts
+     * @return whether the two *SORTED* arrays share an identical value
+     */
+    /** Check for common elements between two sorted arrays of shorts */
+    static boolean shareCommonElement(short[] left, short[] right) {
+        if (left.length == 0 || right.length == 0) return false;
+        int l = 0, r = 0;
+        INCREMENT_LEFT:
+        do {
+            do {
+                if (left[l] == right[r]) return true;
+                if (left[l] < right[r]) continue INCREMENT_LEFT;
+            } while (++r < right.length); return false; // exhausted right hand array => no match
+        } while (++l < left.length); return false; // exhausted left hand array => no match
+    }
 }
