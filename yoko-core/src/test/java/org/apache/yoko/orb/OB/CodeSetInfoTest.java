@@ -19,14 +19,12 @@ package org.apache.yoko.orb.OB;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.stream.Stream;
-
 import static org.apache.yoko.orb.OB.CodeSetInfo.shareCommonElement;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CodeSetInfoTest {
-    static final short[]
+    static final int[]
             NO_SHORTS = {},
             JUST_ZERO = {0},
             ONE_SHORT = {1},
