@@ -258,8 +258,12 @@ public enum CodeSetInfo {
         this.charMap = charMap;
     }
 
-    CodeSetInfo(String desc, int reg_id, int max_width, short[] charsets) {
-        this(desc, reg_id, max_width, charsets, null);
+    CodeSetInfo(String desc, int reg_id, int max_width, CharMapInfo charMap, short... charsets) {
+        this(desc, reg_id, max_width, charsets, charMap);
+    }
+
+    CodeSetInfo(String desc, int reg_id, int max_width, short... charsets) {
+        this(desc, reg_id, max_width, null, charsets);
     }
 
     /** ensure charsets array is non-null and elements are in strictly increasing sequence */
