@@ -247,10 +247,14 @@ public enum CodeSetInfo {
     public final int id;
     final CharMapInfo charMap;
 
-    private final short[] charsets;
+    private final int[] charsets;
+
 
     CodeSetInfo(String desc, int reg_id, int max_width, short[] charsets, CharMapInfo charMap) {
-        assert isValidCharsetsArray(charsets);
+        this(desc, reg_id, max_width, charMap, toInts(charsets));
+    }
+
+    CodeSetInfo(String desc, int reg_id, int max_width, CharMapInfo charMap, int... charsets) {
         this.description = desc;
         this.id = reg_id;
         this.max_bytes = (short)max_width;
@@ -258,12 +262,18 @@ public enum CodeSetInfo {
         this.charMap = charMap;
     }
 
-    CodeSetInfo(String desc, int reg_id, int max_width, CharMapInfo charMap, short... charsets) {
-        this(desc, reg_id, max_width, charsets, charMap);
+    CodeSetInfo(String desc, int reg_id, int max_width, short... charsets) {
+        this(desc, reg_id, max_width, null, toInts(charsets));
     }
 
-    CodeSetInfo(String desc, int reg_id, int max_width, short... charsets) {
+    CodeSetInfo(String desc, int reg_id, int max_width, int... charsets) {
         this(desc, reg_id, max_width, null, charsets);
+    }
+
+    private static int[] toInts(short... shorts) {
+        int[] ints = new int[shorts.length];
+        for (int i = 0; i < shorts.length; i++) ints[i] = shorts[i];
+        return ints;
     }
 
     /** ensure charsets array is non-null and elements are in strictly increasing sequence */
@@ -312,8 +322,25 @@ public enum CodeSetInfo {
      * @param right another *SORTED* array of shorts
      * @return whether the two *SORTED* arrays share an identical value
      */
-    /** Check for common elements between two sorted arrays of shorts */
     static boolean shareCommonElement(short[] left, short[] right) {
+        if (left.length == 0 || right.length == 0) return false;
+        int l = 0, r = 0;
+        INCREMENT_LEFT:
+        do {
+            do {
+                if (left[l] == right[r]) return true;
+                if (left[l] < right[r]) continue INCREMENT_LEFT;
+            } while (++r < right.length); return false; // exhausted right hand array => no match
+        } while (++l < left.length); return false; // exhausted left hand array => no match
+    }
+
+    /**
+     * Check for common elements between two *SORTED* arrays of ints.
+     * @param left a *SORTED* array of ints
+     * @param right another *SORTED* array of ints
+     * @return whether the two *SORTED* arrays share an identical value
+     */
+    static boolean shareCommonElement(int[] left, int[] right) {
         if (left.length == 0 || right.length == 0) return false;
         int l = 0, r = 0;
         INCREMENT_LEFT:
