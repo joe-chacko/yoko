@@ -25,30 +25,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CodeSetInfoTest {
     static final int[]
-            NO_SHORTS = {},
+            NO_INTS = {},
             JUST_ZERO = {0},
-            ONE_SHORT = {1},
-            EVEN_SHORTS = {-2,0,2,4,6,8,10,12},
-            ODD_SHORTS = {-1,1,3,5,7,9,11},
-            PRIME_SHORTS = {2,3,5,7,11,13},
-            NEGATIVE_SHORTS = {-3,-2,-1},
-            SQUARE_SHORTS = {0,1,4,9,16},
-            CUBE_SHORTS = {0,1,8,27},
-            PERFECT_SHORTS = {6,28};
-    @Test void testCompareEmptyArrays() { assertFalse(shareCommonElement(NO_SHORTS, NO_SHORTS)); }
-    @Test void testCompareOneEmptyArray() { assertFalse(shareCommonElement(NO_SHORTS, JUST_ZERO)); }
-    @Test void testCompareOtherEmptyArray() { assertFalse(shareCommonElement(ONE_SHORT, NO_SHORTS)); }
-    @Test void testNoMatches1() { assertFalse(shareCommonElement(EVEN_SHORTS, ODD_SHORTS)); }
-    @Test void testNoMatches2() { assertFalse(shareCommonElement(PRIME_SHORTS, NEGATIVE_SHORTS)); }
-    @Test void testNoMatches3() { assertFalse(shareCommonElement(ODD_SHORTS, PERFECT_SHORTS)); }
-    @Test void testNoMatches4() { assertFalse(shareCommonElement(PERFECT_SHORTS, ODD_SHORTS)); }
-    @Test void testMatchAtEnds1() { assertTrue(shareCommonElement(NEGATIVE_SHORTS, ODD_SHORTS)); }
-    @Test void testMatchAtEnds2() { assertTrue(shareCommonElement(ODD_SHORTS, NEGATIVE_SHORTS)); }
-    @Test void testMatchInMiddleOfLeft() { assertTrue(shareCommonElement(EVEN_SHORTS, PERFECT_SHORTS));}
-    @Test void testMatchInMiddleOfRight() { assertTrue(shareCommonElement(PERFECT_SHORTS, EVEN_SHORTS));}
-    @Test void testMatchSomewhere1() { assertTrue(shareCommonElement(EVEN_SHORTS, SQUARE_SHORTS));}
-    @Test void testMatchSomewhere2() { assertTrue(shareCommonElement(EVEN_SHORTS, CUBE_SHORTS));}
-    @Test void testMatchSomewhere3() { assertTrue(shareCommonElement(ODD_SHORTS, SQUARE_SHORTS));}
-    @Test void testMatchSomewhere4() { assertTrue(shareCommonElement(NEGATIVE_SHORTS, EVEN_SHORTS));}
-    @Test void testMatchSomewhere5() { assertTrue(shareCommonElement(NEGATIVE_SHORTS, ODD_SHORTS));}
+            ONE_INT = {1},
+            EVEN_INTS = {-2,0,2,4,6,8,10,12},
+            ODD_INTS = {-1,1,3,5,7,9,11},
+            PRIME_INTS = {2,3,5,7,11,13},
+            NEGATIVE_INTS = {-3,-2,-1},
+            SQUARE_INTS = {0,1,4,9,16},
+            CUBE_INTS = {0,1,8,27},
+            PERFECT_INTS = {6,28};
+    @Test void testCompareEmptyArrays() { assertFalse(shareCommonElement(NO_INTS, NO_INTS)); }
+    @Test void testCompareOneEmptyArray() { assertFalse(shareCommonElement(NO_INTS, JUST_ZERO)); }
+    @Test void testCompareOtherEmptyArray() { assertFalse(shareCommonElement(ONE_INT, NO_INTS)); }
+    @Test void testNoMatches1() { assertFalse(shareCommonElement(EVEN_INTS, ODD_INTS)); }
+    @Test void testNoMatches2() { assertFalse(shareCommonElement(PRIME_INTS, NEGATIVE_INTS)); }
+    @Test void testNoMatches3() { assertFalse(shareCommonElement(ODD_INTS, PERFECT_INTS)); }
+    @Test void testNoMatches4() { assertFalse(shareCommonElement(PERFECT_INTS, ODD_INTS)); }
+    @Test void testMatchAtEnds1() { assertTrue(shareCommonElement(NEGATIVE_INTS, ODD_INTS)); }
+    @Test void testMatchAtEnds2() { assertTrue(shareCommonElement(ODD_INTS, NEGATIVE_INTS)); }
+    @Test void testMatchInMiddleOfLeft() { assertTrue(shareCommonElement(EVEN_INTS, PERFECT_INTS));}
+    @Test void testMatchInMiddleOfRight() { assertTrue(shareCommonElement(PERFECT_INTS, EVEN_INTS));}
+    @Test void testMatchSomewhere1() { assertTrue(shareCommonElement(EVEN_INTS, SQUARE_INTS));}
+    @Test void testMatchSomewhere2() { assertTrue(shareCommonElement(EVEN_INTS, CUBE_INTS));}
+    @Test void testMatchSomewhere3() { assertTrue(shareCommonElement(ODD_INTS, SQUARE_INTS));}
+    @Test void testMatchSomewhere4() { assertTrue(shareCommonElement(NEGATIVE_INTS, EVEN_INTS));}
+    @Test void testMatchSomewhere5() { assertTrue(shareCommonElement(NEGATIVE_INTS, ODD_INTS));}
 }
