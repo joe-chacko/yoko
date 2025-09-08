@@ -857,7 +857,7 @@ public class ORB_impl extends ORBSingleton {
         String serverId = "";
         String serverInstance = "";
         int concModel = Client.Blocking;
-        int nativeCs = ISO_LATIN_1.id;
+        int nativeCs = UTF_8.id;
         int nativeWcs = UTF_16.id;
         int defaultWcs = 0;
 
