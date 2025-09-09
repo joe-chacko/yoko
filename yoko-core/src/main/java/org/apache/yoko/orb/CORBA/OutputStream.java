@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import java.math.BigDecimal;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -108,21 +109,14 @@ import static org.omg.CORBA_2_4.TCKind._tk_local_interface;
 public final class OutputStream extends org.omg.CORBA_2_3.portable.OutputStream implements ValueOutputStream {
     private static final Logger LOGGER = Logger.getLogger(OutputStream.class.getName());
 
-    private ORBInstance orbInstance_; // Java only
-
+    private ORBInstance orbInstance_;
     private final WriteBuffer writeBuffer;
-
-    private GiopVersion giopVersion_ = GIOP1_0;
-
+    private final GiopVersion giopVersion_;
     private final CodeConverters codeConverters_;
-
-    private boolean charWriterRequired_;
-
-    private boolean charConversionRequired_;
-
-    private boolean wCharWriterRequired_;
-
-    private boolean wCharConversionRequired_;
+    private final boolean charWriterRequired_;
+    private final boolean charConversionRequired_;
+    private final boolean wCharWriterRequired_;
+    private final boolean wCharConversionRequired_;
 
     // Handles all OBV marshalling
     private ValueWriter valueWriter_;
@@ -1530,27 +1524,20 @@ public final class OutputStream extends org.omg.CORBA_2_3.portable.OutputStream 
 
     public OutputStream(WriteBuffer writeBuffer, CodeConverters converters, GiopVersion giopVersion) {
         this.writeBuffer = writeBuffer;
+        this.giopVersion_ = giopVersion == null ? GIOP1_0 : giopVersion;
 
-        if (giopVersion != null) giopVersion_ = giopVersion;
-
-        charWriterRequired_ = false;
-        charConversionRequired_ = false;
-        wCharWriterRequired_ = false;
-        wCharConversionRequired_ = false;
-
-        codeConverters_ = CodeConverters.createCopy(converters);
-
-        if (converters != null) {
-            if (codeConverters_.outputCharConverter != null) {
-                charWriterRequired_ = codeConverters_.outputCharConverter.writerRequired();
-                charConversionRequired_ = codeConverters_.outputCharConverter.conversionRequired();
-            }
-
-            if (codeConverters_.outputWcharConverter != null) {
-                wCharWriterRequired_ = codeConverters_.outputWcharConverter.writerRequired();
-                wCharConversionRequired_ = codeConverters_.outputWcharConverter.conversionRequired();
-            }
+        {
+            Optional<CodeConverterBase> charConv = Optional.ofNullable(converters).map(c -> c.outputCharConverter);
+            this.charWriterRequired_ = charConv.map(cc -> cc.writerRequired()).orElse(false);
+            this.charConversionRequired_ = charConv.map(cc -> cc.conversionRequired()).orElse(false);
         }
+        {
+            Optional<CodeConverterBase> wcharConv = Optional.ofNullable(converters).map(c -> c.outputWcharConverter);
+            this.wCharWriterRequired_ = wcharConv.map(cc -> cc.writerRequired()).orElse(false);
+            this.wCharConversionRequired_ = wcharConv.map(cc -> cc.conversionRequired()).orElse(false);
+        }
+
+        this.codeConverters_ = CodeConverters.createCopy(converters);
     }
 
     @Override
@@ -1596,27 +1583,22 @@ public final class OutputStream extends org.omg.CORBA_2_3.portable.OutputStream 
         valueWriter().endValue();
     }
 
-    // Java only
     public void _OB_ORBInstance(ORBInstance orbInstance) {
         orbInstance_ = orbInstance;
     }
 
-    // Java only
     public void _OB_invocationContext(Object invocationContext) {
         invocationContext_ = invocationContext;
     }
 
-    // Java only
     public Object _OB_invocationContext() {
         return invocationContext_;
     }
 
-    // Java only
     void _OB_delegateContext(Object delegateContext) {
         delegateContext_ = delegateContext;
     }
 
-    // Java only
     Object _OB_delegateContext() {
         return delegateContext_;
     }
