@@ -1,4 +1,6 @@
 /*
+ * Copyright 2025 IBM Corporation and others.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,28 +17,17 @@
  */
 package org.omg.CONV_FRAME;
 
-//
+import org.omg.CORBA.portable.IDLEntity;
+
 // IDL:omg.org/CONV_FRAME/CodeSetComponent:1.0
-//
-/***/
+public final class CodeSetComponent implements IDLEntity {
+    public int native_code_set;
+    public int[] conversion_code_sets;
 
-final public class CodeSetComponent implements org.omg.CORBA.portable.IDLEntity
-{
-    private static final String _ob_id = "IDL:omg.org/CONV_FRAME/CodeSetComponent:1.0";
+    public CodeSetComponent() {}
 
-    public
-    CodeSetComponent()
-    {
-    }
-
-    public
-    CodeSetComponent(int native_code_set,
-                     int[] conversion_code_sets)
-    {
+    public CodeSetComponent(int native_code_set, int... conversion_code_sets) {
         this.native_code_set = native_code_set;
         this.conversion_code_sets = conversion_code_sets;
     }
-
-    public int native_code_set;
-    public int[] conversion_code_sets;
 }
