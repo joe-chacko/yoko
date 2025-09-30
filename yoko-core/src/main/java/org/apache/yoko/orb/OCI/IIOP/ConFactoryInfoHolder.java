@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,19 @@
  */
 package org.apache.yoko.orb.OCI.IIOP;
 
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.portable.InputStream;
+import org.omg.CORBA.portable.OutputStream;
+import org.omg.CORBA.portable.Streamable;
+
+import static org.apache.yoko.orb.OCI.IIOP.ConFactoryInfoHelper.read;
+import static org.apache.yoko.orb.OCI.IIOP.ConFactoryInfoHelper.type;
+import static org.apache.yoko.orb.OCI.IIOP.ConFactoryInfoHelper.write;
+
 //
 // IDL:orb.yoko.apache.org/OCI/IIOP/ConFactoryInfo:1.0
 //
-final public class ConFactoryInfoHolder implements org.omg.CORBA.portable.Streamable
+final public class ConFactoryInfoHolder implements Streamable
 {
     public ConFactoryInfo value;
 
@@ -36,20 +45,20 @@ final public class ConFactoryInfoHolder implements org.omg.CORBA.portable.Stream
     }
 
     public void
-    _read(org.omg.CORBA.portable.InputStream in)
+    _read(InputStream in)
     {
-        value = ConFactoryInfoHelper.read(in);
+        value = read(in);
     }
 
     public void
-    _write(org.omg.CORBA.portable.OutputStream out)
+    _write(OutputStream out)
     {
-        ConFactoryInfoHelper.write(out, value);
+        write(out, value);
     }
 
-    public org.omg.CORBA.TypeCode
+    public TypeCode
     _type()
     {
-        return ConFactoryInfoHelper.type();
+        return type();
     }
 }
