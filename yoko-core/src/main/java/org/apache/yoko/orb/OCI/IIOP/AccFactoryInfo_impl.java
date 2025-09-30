@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
  */
 package org.apache.yoko.orb.OCI.IIOP;
 
-import org.apache.yoko.orb.OCI.IIOP.AccFactoryInfo;
-import org.apache.yoko.orb.OCI.IIOP.PLUGIN_ID;
+import org.omg.IOP.TAG_INTERNET_IOP;
 
 final class AccFactoryInfo_impl extends org.omg.CORBA.LocalObject implements
         AccFactoryInfo {
@@ -31,7 +30,7 @@ final class AccFactoryInfo_impl extends org.omg.CORBA.LocalObject implements
     }
 
     public int tag() {
-        return org.omg.IOP.TAG_INTERNET_IOP.value;
+        return TAG_INTERNET_IOP.value;
     }
 
     public String describe() {
