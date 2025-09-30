@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,17 @@
  */
 package org.apache.yoko.orb.OCI.IIOP;
 
-import org.apache.yoko.util.MinorCodes;
+import org.omg.CORBA.Any;
+import org.omg.CORBA.BAD_OPERATION;
+import org.omg.CORBA.ORB;
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.portable.InputStream;
+import org.omg.CORBA.portable.OutputStream;
+
+import static org.apache.yoko.util.MinorCodes.MinorTypeMismatch;
+import static org.apache.yoko.util.MinorCodes.describeBadOperation;
+import static org.omg.CORBA.CompletionStatus.COMPLETED_NO;
+import static org.omg.CORBA.TCKind.tk_string;
 
 //
 // IDL:orb.yoko.apache.org/OCI/IIOP/InetAddr:1.0
@@ -25,35 +35,34 @@ import org.apache.yoko.util.MinorCodes;
 final public class InetAddrHelper
 {
     public static void
-    insert(org.omg.CORBA.Any any, String val)
+    insert(Any any, String val)
     {
-        org.omg.CORBA.portable.OutputStream out = any.create_output_stream();
+        OutputStream out = any.create_output_stream();
         write(out, val);
         any.read_value(out.create_input_stream(), type());
     }
 
     public static String
-    extract(org.omg.CORBA.Any any)
+    extract(Any any)
     {
         if(any.type().equivalent(type()))
             return read(any.create_input_stream());
         else
 
-            throw new org.omg.CORBA.BAD_OPERATION(
-                MinorCodes
-                        .describeBadOperation(MinorCodes.MinorTypeMismatch),
-                MinorCodes.MinorTypeMismatch, org.omg.CORBA.CompletionStatus.COMPLETED_NO);
+            throw new BAD_OPERATION(
+                describeBadOperation(MinorTypeMismatch),
+                MinorTypeMismatch, COMPLETED_NO);
     }
 
-    private static org.omg.CORBA.TypeCode typeCode_;
+    private static TypeCode typeCode_;
 
-    public static org.omg.CORBA.TypeCode
+    public static TypeCode
     type()
     {
         if(typeCode_ == null)
         {
-            org.omg.CORBA.ORB orb = org.omg.CORBA.ORB.init();
-            typeCode_ = orb.create_alias_tc(id(), "InetAddr", orb.get_primitive_tc(org.omg.CORBA.TCKind.tk_string));
+            ORB orb = ORB.init();
+            typeCode_ = orb.create_alias_tc(id(), "InetAddr", orb.get_primitive_tc(tk_string));
         }
 
         return typeCode_;
@@ -66,7 +75,7 @@ final public class InetAddrHelper
     }
 
     public static String
-    read(org.omg.CORBA.portable.InputStream in)
+    read(InputStream in)
     {
         String _ob_v;
         _ob_v = in.read_string();
@@ -74,7 +83,7 @@ final public class InetAddrHelper
     }
 
     public static void
-    write(org.omg.CORBA.portable.OutputStream out, String val)
+    write(OutputStream out, String val)
     {
         out.write_string(val);
     }
