@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,11 @@ import org.omg.IOP.TAG_INTERNET_IOP;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 import static org.apache.yoko.orb.OCI.IIOP.Exceptions.asCommFailure;
 
 /**
@@ -68,9 +69,9 @@ public final class ConnectorInfo_impl extends LocalObject implements ConnectorIn
         this.host = host;
         this.port = (short)port;
         if (cb == null || cb.length == 0)
-            callbacks = Collections.emptyList();
+            callbacks = emptyList();
         else
-            callbacks = Collections.unmodifiableList(new ArrayList<ConnectCB>(Arrays.asList(cb)));
+            callbacks = unmodifiableList(new ArrayList<ConnectCB>(asList(cb)));
     }
 
     String getHost() { return host; }
