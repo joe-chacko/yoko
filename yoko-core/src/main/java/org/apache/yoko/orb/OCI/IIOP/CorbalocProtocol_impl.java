@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@ package org.apache.yoko.orb.OCI.IIOP;
 
 import org.apache.yoko.orb.CORBA.OutputStream;
 import org.apache.yoko.orb.OB.CorbalocProtocol;
-import org.apache.yoko.util.MinorCodes;
 import org.omg.CORBA.BAD_PARAM;
-import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.LocalObject;
 import org.omg.IIOP.ProfileBody_1_0;
 import org.omg.IIOP.ProfileBody_1_0Helper;
@@ -31,6 +29,10 @@ import org.omg.IIOP.Version;
 import org.omg.IOP.TAG_INTERNET_IOP;
 import org.omg.IOP.TaggedComponent;
 import org.omg.IOP.TaggedProfile;
+
+import static org.apache.yoko.util.MinorCodes.MinorBadAddress;
+import static org.apache.yoko.util.MinorCodes.describeBadParam;
+import static org.omg.CORBA.CompletionStatus.COMPLETED_NO;
 
 public class CorbalocProtocol_impl extends LocalObject implements
         CorbalocProtocol {
@@ -67,11 +69,10 @@ public class CorbalocProtocol_impl extends LocalObject implements
             }
             if (!ok || !seenDot)
                 throw new BAD_PARAM(
-                        MinorCodes
-                                .describeBadParam(MinorCodes.MinorBadAddress)
+                        describeBadParam(MinorBadAddress)
                                 + ": iiop version must be of the form `X.Y'",
-                        MinorCodes.MinorBadAddress,
-                        CompletionStatus.COMPLETED_NO);
+                        MinorBadAddress,
+                        COMPLETED_NO);
 
             int nMajor = 0, nMinor = 0;
             try {
@@ -81,11 +82,10 @@ public class CorbalocProtocol_impl extends LocalObject implements
             }
             if (nMajor != 1 || nMinor > 255)
                 throw new BAD_PARAM(
-                        MinorCodes
-                                .describeBadParam(MinorCodes.MinorBadAddress)
+                        describeBadParam(MinorBadAddress)
                                 + ": iiop version is invalid or unsupported",
-                        MinorCodes.MinorBadAddress,
-                        CompletionStatus.COMPLETED_NO);
+                        MinorBadAddress,
+                        COMPLETED_NO);
             // 
             // Can only provide up to an iiop 1.2 profile. A server should
             // be able to communicate with a client with a lesser minor
@@ -108,11 +108,10 @@ public class CorbalocProtocol_impl extends LocalObject implements
         //
         if (start == addr.length() || addr.charAt(start) == ':')
             throw new BAD_PARAM(
-                    MinorCodes
-                            .describeBadParam(MinorCodes.MinorBadAddress)
+                    describeBadParam(MinorBadAddress)
                             + ": iiop hostname must be specified",
-                    MinorCodes.MinorBadAddress,
-                    CompletionStatus.COMPLETED_NO);
+                    MinorBadAddress,
+                    COMPLETED_NO);
 
         //
         // Hostname is terminated by ':port', or by end of string
@@ -134,19 +133,17 @@ public class CorbalocProtocol_impl extends LocalObject implements
                 port = Integer.parseInt(str);
             } catch (NumberFormatException ex) {
                 throw new BAD_PARAM(
-                        MinorCodes
-                                .describeBadParam(MinorCodes.MinorBadAddress)
+                        describeBadParam(MinorBadAddress)
                                 + ": iiop port is invalid",
-                        MinorCodes.MinorBadAddress,
-                        CompletionStatus.COMPLETED_NO);
+                        MinorBadAddress,
+                        COMPLETED_NO);
             }
             if (port < 1 || port > 65535)
                 throw new BAD_PARAM(
-                        MinorCodes
-                                .describeBadParam(MinorCodes.MinorBadAddress)
+                        describeBadParam(MinorBadAddress)
                                 + ": iiop port must be between 1 and 65535",
-                        MinorCodes.MinorBadAddress,
-                        CompletionStatus.COMPLETED_NO);
+                        MinorBadAddress,
+                        COMPLETED_NO);
         }
 
         //
