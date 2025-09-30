@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,19 @@
  */
 package org.apache.yoko.orb.OCI.IIOP;
 
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.portable.InputStream;
+import org.omg.CORBA.portable.OutputStream;
+import org.omg.CORBA.portable.Streamable;
+
+import static org.apache.yoko.orb.OCI.IIOP.TransportInfoHelper.read;
+import static org.apache.yoko.orb.OCI.IIOP.TransportInfoHelper.type;
+import static org.apache.yoko.orb.OCI.IIOP.TransportInfoHelper.write;
+
 //
 // IDL:orb.yoko.apache.org/OCI/IIOP/TransportInfo:1.0
 //
-final public class TransportInfoHolder implements org.omg.CORBA.portable.Streamable
+final public class TransportInfoHolder implements Streamable
 {
     public TransportInfo value;
 
@@ -36,20 +45,20 @@ final public class TransportInfoHolder implements org.omg.CORBA.portable.Streama
     }
 
     public void
-    _read(org.omg.CORBA.portable.InputStream in)
+    _read(InputStream in)
     {
-        value = TransportInfoHelper.read(in);
+        value = read(in);
     }
 
     public void
-    _write(org.omg.CORBA.portable.OutputStream out)
+    _write(OutputStream out)
     {
-        TransportInfoHelper.write(out, value);
+        write(out, value);
     }
 
-    public org.omg.CORBA.TypeCode
+    public TypeCode
     _type()
     {
-        return TransportInfoHelper.type();
+        return type();
     }
 }
