@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,17 @@
  */
 package org.apache.yoko.orb.OCI.IIOP;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.yoko.orb.OCI.ConnectCB;
+import org.omg.IOP.TAG_INTERNET_IOP;
 
-import org.apache.yoko.orb.OCI.IIOP.ConFactoryInfo;
-import org.apache.yoko.orb.OCI.IIOP.PLUGIN_ID;
+import java.util.Vector;
 
 final class ConFactoryInfo_impl extends org.omg.CORBA.LocalObject implements
         ConFactoryInfo {
     //
     // All connect callback objects
     //
-    private java.util.Vector connectCBVec_ = new java.util.Vector();
+    private Vector connectCBVec_ = new Vector();
 
     private ConnectionHelper connectionHelper_;   // the helper for managing socket connections.
 
@@ -41,7 +40,7 @@ final class ConFactoryInfo_impl extends org.omg.CORBA.LocalObject implements
     }
 
     public int tag() {
-        return org.omg.IOP.TAG_INTERNET_IOP.value;
+        return TAG_INTERNET_IOP.value;
     }
 
     public synchronized String describe() {
@@ -50,7 +49,7 @@ final class ConFactoryInfo_impl extends org.omg.CORBA.LocalObject implements
         return desc;
     }
 
-    public synchronized void add_connect_cb(org.apache.yoko.orb.OCI.ConnectCB cb) {
+    public synchronized void add_connect_cb(ConnectCB cb) {
         int length = connectCBVec_.size();
         for (int i = 0; i < length; i++)
             if (connectCBVec_.elementAt(i) == cb)
@@ -59,7 +58,7 @@ final class ConFactoryInfo_impl extends org.omg.CORBA.LocalObject implements
     }
 
     public synchronized void remove_connect_cb(
-            org.apache.yoko.orb.OCI.ConnectCB cb) {
+            ConnectCB cb) {
         int length = connectCBVec_.size();
         for (int i = 0; i < length; i++)
             if (connectCBVec_.elementAt(i) == cb) {
@@ -73,11 +72,11 @@ final class ConFactoryInfo_impl extends org.omg.CORBA.LocalObject implements
     // Application programs must not use these functions directly
     // ------------------------------------------------------------------
 
-    synchronized org.apache.yoko.orb.OCI.ConnectCB[] _OB_getConnectCBSeq() {
+    synchronized ConnectCB[] _OB_getConnectCBSeq() {
         int length = connectCBVec_.size();
-        org.apache.yoko.orb.OCI.ConnectCB[] cbs = new org.apache.yoko.orb.OCI.ConnectCB[length];
+        ConnectCB[] cbs = new ConnectCB[length];
         for (int i = 0; i < length; i++) {
-            org.apache.yoko.orb.OCI.ConnectCB cb = (org.apache.yoko.orb.OCI.ConnectCB) connectCBVec_
+            ConnectCB cb = (ConnectCB) connectCBVec_
                     .elementAt(i);
             cbs[i] = cb;
         }
