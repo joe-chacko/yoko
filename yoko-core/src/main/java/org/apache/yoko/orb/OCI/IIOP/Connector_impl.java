@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
  */
 package org.apache.yoko.orb.OCI.IIOP;
 
-import org.apache.yoko.orb.OB.Net;
 import org.apache.yoko.orb.OB.PROTOCOL_POLICY_ID;
 import org.apache.yoko.orb.OB.ProtocolPolicy;
 import org.apache.yoko.orb.OB.ProtocolPolicyHelper;
@@ -28,9 +27,11 @@ import org.apache.yoko.orb.OCI.ProfileInfoHolder;
 import org.apache.yoko.orb.OCI.ProfileInfoSeqHolder;
 import org.apache.yoko.orb.OCI.Transport;
 import org.omg.CORBA.Policy;
+import org.omg.CORBA.SystemException;
 import org.omg.CSIIOP.TAG_CSI_SEC_MECH_LIST;
 import org.omg.IOP.Codec;
 import org.omg.IOP.IOR;
+import org.omg.IOP.TAG_INTERNET_IOP;
 import org.omg.IOP.TaggedComponent;
 
 import java.io.IOException;
@@ -45,10 +46,12 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.logging.Level.FINE;
+import static java.util.logging.Logger.getLogger;
 import static org.apache.yoko.logging.VerboseLogging.CONN_LOG;
 import static org.apache.yoko.logging.VerboseLogging.CONN_OUT_LOG;
 import static org.apache.yoko.logging.VerboseLogging.logged;
 import static org.apache.yoko.logging.VerboseLogging.wrapped;
+import static org.apache.yoko.orb.OB.Net.CompareHosts;
 import static org.apache.yoko.orb.OCI.IIOP.Exceptions.asCommFailure;
 import static org.apache.yoko.orb.OCI.IIOP.Util.extractProfileInfo;
 import static org.apache.yoko.orb.exceptions.Transients.CONNECT_FAILED;
@@ -56,7 +59,7 @@ import static org.apache.yoko.util.HexConverter.octetsToAscii;
 import static org.apache.yoko.util.MinorCodes.MinorSocket;
 
 final class Connector_impl extends org.omg.CORBA.LocalObject implements Connector {
-    static final Logger logger = Logger.getLogger(Connector_impl.class.getName());
+    static final Logger logger = getLogger(Connector_impl.class.getName());
 
     private final IOR ior_;    // the target IOR we're connecting with
 
@@ -104,7 +107,7 @@ final class Connector_impl extends org.omg.CORBA.LocalObject implements Connecto
     }
 
     public int tag() {
-        return org.omg.IOP.TAG_INTERNET_IOP.value;
+        return TAG_INTERNET_IOP.value;
     }
 
     public Transport connect() {
@@ -146,7 +149,7 @@ final class Connector_impl extends org.omg.CORBA.LocalObject implements Connecto
         try {
             tr = new Transport_impl(socket_, listenMap_);
             socket_ = null;
-        } catch (org.omg.CORBA.SystemException ex) {
+        } catch (SystemException ex) {
             logger.log(FINE, "Transport creation error", ex);
             try {
                 socket_.close();
@@ -161,7 +164,7 @@ final class Connector_impl extends org.omg.CORBA.LocalObject implements Connecto
         org.apache.yoko.orb.OCI.TransportInfo trInfo = tr.get_info();
         try {
             info_._OB_callConnectCB(trInfo);
-        } catch (org.omg.CORBA.SystemException ex) {
+        } catch (SystemException ex) {
             logger.log(FINE, "Connection callback error", ex);
             tr.close();
             throw ex;
@@ -248,7 +251,7 @@ final class Connector_impl extends org.omg.CORBA.LocalObject implements Connecto
         try {
             tr = new Transport_impl(socket_, listenMap_);
             socket_ = null;
-        } catch (org.omg.CORBA.SystemException ex) {
+        } catch (SystemException ex) {
             logger.log(FINE, "Transport setup error", ex);
             try {
                 socket_.close();
@@ -263,7 +266,7 @@ final class Connector_impl extends org.omg.CORBA.LocalObject implements Connecto
         org.apache.yoko.orb.OCI.TransportInfo trInfo = tr.get_info();
         try {
             info_._OB_callConnectCB(trInfo);
-        } catch (org.omg.CORBA.SystemException ex) {
+        } catch (SystemException ex) {
             logger.log(FINE, "Callback setup error", ex);
             tr.close();
             throw ex;
@@ -316,13 +319,13 @@ final class Connector_impl extends org.omg.CORBA.LocalObject implements Connecto
         return profileInfoSeq.value;
     }
 
-    public boolean equal(org.apache.yoko.orb.OCI.Connector con) {
+    public boolean equal(Connector con) {
         return (con instanceof Connector_impl) && equal0((Connector_impl)con);
     }
 
     private boolean equal0(Connector_impl that) {
         if (this.info_.getPort() != that.info_.getPort()) return false;
-        return (Net.CompareHosts(this.info_.getHost(), that.info_.getHost()) && Arrays.equals(transportInfo, that.transportInfo));
+        return (CompareHosts(this.info_.getHost(), that.info_.getHost()) && Arrays.equals(transportInfo, that.transportInfo));
     }
 
     private byte[] extractTransportInfo(IOR ior) {
