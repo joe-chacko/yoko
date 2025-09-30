@@ -22,6 +22,10 @@ import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.Streamable;
 
+import static org.apache.yoko.orb.OCI.CloseCBHelper.read;
+import static org.apache.yoko.orb.OCI.CloseCBHelper.type;
+import static org.apache.yoko.orb.OCI.CloseCBHelper.write;
+
 //
 // IDL:orb.yoko.apache.org/OCI/CloseCB:1.0
 //
@@ -43,18 +47,18 @@ final public class CloseCBHolder implements Streamable
     public void
     _read(InputStream in)
     {
-        value = CloseCBHelper.read(in);
+        value = read(in);
     }
 
     public void
     _write(OutputStream out)
     {
-        CloseCBHelper.write(out, value);
+        write(out, value);
     }
 
     public TypeCode
     _type()
     {
-        return CloseCBHelper.type();
+        return type();
     }
 }
