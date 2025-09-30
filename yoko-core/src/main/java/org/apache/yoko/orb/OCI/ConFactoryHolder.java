@@ -22,6 +22,10 @@ import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.Streamable;
 
+import static org.apache.yoko.orb.OCI.ConFactoryHelper.read;
+import static org.apache.yoko.orb.OCI.ConFactoryHelper.type;
+import static org.apache.yoko.orb.OCI.ConFactoryHelper.write;
+
 //
 // IDL:orb.yoko.apache.org/OCI/ConFactory:1.0
 //
@@ -43,18 +47,18 @@ final public class ConFactoryHolder implements Streamable
     public void
     _read(InputStream in)
     {
-        value = ConFactoryHelper.read(in);
+        value = read(in);
     }
 
     public void
     _write(OutputStream out)
     {
-        ConFactoryHelper.write(out, value);
+        write(out, value);
     }
 
     public TypeCode
     _type()
     {
-        return ConFactoryHelper.type();
+        return type();
     }
 }
