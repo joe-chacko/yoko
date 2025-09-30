@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,12 @@
 package org.apache.yoko.orb.OCI.IIOP;
 
 import org.apache.yoko.giop.MessageType;
-import org.apache.yoko.orb.OCI.Acceptor;
 import org.apache.yoko.io.ReadBuffer;
 import org.apache.yoko.io.WriteBuffer;
+import org.apache.yoko.orb.OCI.Acceptor;
 import org.apache.yoko.orb.OCI.SendReceiveMode;
 import org.apache.yoko.orb.OCI.Transport;
 import org.omg.CORBA.COMM_FAILURE;
-import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.LocalObject;
 
 import java.io.IOException;
@@ -36,14 +35,15 @@ import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.apache.yoko.orb.OCI.IIOP.Exceptions.asCommFailure;
+import static org.apache.yoko.orb.OCI.SendReceiveMode.SendReceive;
 import static org.apache.yoko.util.MinorCodes.MinorRecv;
 import static org.apache.yoko.util.MinorCodes.MinorRecvZero;
 import static org.apache.yoko.util.MinorCodes.MinorSend;
 import static org.apache.yoko.util.MinorCodes.MinorSetSoTimeout;
 import static org.apache.yoko.util.MinorCodes.MinorSocket;
 import static org.apache.yoko.util.MinorCodes.describeCommFailure;
-import static org.apache.yoko.orb.OCI.IIOP.Exceptions.asCommFailure;
-import static org.apache.yoko.orb.OCI.SendReceiveMode.SendReceive;
+import static org.omg.CORBA.CompletionStatus.COMPLETED_NO;
 
 final public class Transport_impl extends LocalObject implements Transport {
     // This data member must not be private because the info object
@@ -81,7 +81,7 @@ final public class Transport_impl extends LocalObject implements Transport {
                                 + ": socket error during setSoTimeout: "
                                 + ex.getMessage(),
                         MinorSetSoTimeout,
-                        CompletionStatus.COMPLETED_NO).initCause(ex);
+                        COMPLETED_NO).initCause(ex);
             } catch (NullPointerException ex) {
                 logger.log(Level.FINE, "Socket setup error", ex);
                 throw (COMM_FAILURE)new COMM_FAILURE(
@@ -89,7 +89,7 @@ final public class Transport_impl extends LocalObject implements Transport {
                                 + ": NullPointerException error during setSoTimeout: "
                                 + ex.getMessage(),
                         MinorSetSoTimeout,
-                        CompletionStatus.COMPLETED_NO).initCause(ex);
+                        COMPLETED_NO).initCause(ex);
             }
         }
     }
@@ -175,7 +175,7 @@ final public class Transport_impl extends LocalObject implements Transport {
         while (!writeBuffer.isComplete()) {
             try {
                 if (!writeBuffer.readFrom(in_))
-                    throw new COMM_FAILURE(describeCommFailure(MinorRecvZero), MinorRecvZero, CompletionStatus.COMPLETED_NO);
+                    throw new COMM_FAILURE(describeCommFailure(MinorRecvZero), MinorRecvZero, COMPLETED_NO);
             } catch (InterruptedIOException ex) {
                 logger.log(Level.FINE, "Received interrupted exception", ex);
 
