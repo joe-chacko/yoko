@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public final class ListenerMap {
         public boolean equals(Object theOther) {
             if (this == theOther) return true;
             if (theOther == null || getClass() != theOther.getClass()) return false;
-            org.omg.IIOP.ListenPoint that = (org.omg.IIOP.ListenPoint) theOther;
+            ListenPoint that = (ListenPoint) theOther;
             return this.port == that.port && Objects.equals(this.host, that.host);
         }
 
