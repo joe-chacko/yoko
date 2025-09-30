@@ -22,6 +22,10 @@ import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.Streamable;
 
+import static org.apache.yoko.orb.OCI.CloseCBSeqHelper.read;
+import static org.apache.yoko.orb.OCI.CloseCBSeqHelper.type;
+import static org.apache.yoko.orb.OCI.CloseCBSeqHelper.write;
+
 //
 // IDL:orb.yoko.apache.org/OCI/CloseCBSeq:1.0
 //
@@ -43,18 +47,18 @@ final public class CloseCBSeqHolder implements Streamable
     public void
     _read(InputStream in)
     {
-        value = CloseCBSeqHelper.read(in);
+        value = read(in);
     }
 
     public void
     _write(OutputStream out)
     {
-        CloseCBSeqHelper.write(out, value);
+        write(out, value);
     }
 
     public TypeCode
     _type()
     {
-        return CloseCBSeqHelper.type();
+        return type();
     }
 }
