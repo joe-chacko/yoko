@@ -62,4 +62,10 @@ public enum Collectors {
             public Set<Characteristics> characteristics() { return EnumSet.of(UNORDERED, IDENTITY_FINISH); }
         };
     }
+
+    public static <T> BiConsumer<T, T> neverCombine() {
+        return (t1, t2) -> {
+            throw new UnsupportedOperationException("the calling method is not written to support parallel streams");
+        };
+    }
 }
