@@ -45,12 +45,13 @@ public final class ReadBuffer extends Buffer<ReadBuffer> {
         return buffer;
     }
 
+    /** Read the available bytes into the provided write buffer. */
     public WriteBuffer readBytes(WriteBuffer buffer) {
         return buffer.writeBytes(core.data, position, available());
     }
 
     public byte[] copyRemainingBytes() {
-        return copyOf(core.data, available());
+        return copyOfRange(core.data, position, core.length);
     }
 
     public char peekChar() {
