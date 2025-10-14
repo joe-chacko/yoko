@@ -85,6 +85,9 @@ subprojects { sp ->
   // Test projects are now Java 11 and up only.
   sourceCompatibility = targetCompatibility = productionProjectPaths.contains(sp.path) ? 1.8 : 11
 
+  // Use Java 11 for all unit test compilation too
+  tasks.withType(JavaCompile).configureEach {if (name.toLowerCase().contains('test')) sourceCompatibility = targetCompatibility = 11 }
+
   repositories {
     mavenLocal()
     mavenCentral()
