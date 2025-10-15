@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import static org.apache.yoko.util.Hex.formatHexPara;
 public final class ReadBuffer extends Buffer<ReadBuffer> {
     ReadBuffer(Core core) { super(core); }
 
+    public boolean empty() { return length() == position; }
+
     public byte peekByte() { return core.data[position];    }
 
     public byte readByte() { return core.data[position++]; }
@@ -43,12 +45,13 @@ public final class ReadBuffer extends Buffer<ReadBuffer> {
         return buffer;
     }
 
+    /** Read the available bytes into the provided write buffer. */
     public WriteBuffer readBytes(WriteBuffer buffer) {
         return buffer.writeBytes(core.data, position, available());
     }
 
     public byte[] copyRemainingBytes() {
-        return copyOf(core.data, available());
+        return copyOfRange(core.data, position, core.length);
     }
 
     public char peekChar() {
@@ -59,7 +62,7 @@ public final class ReadBuffer extends Buffer<ReadBuffer> {
         return (char) ((core.data[position++] << 8) | (core.data[position++] & 0xff));
     }
 
-    private char readChar_LE() {
+    public char readChar_LE() {
         return (char) ((core.data[position++] & 0xff) | (core.data[position++] << 8));
     }
 
