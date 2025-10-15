@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,6 +153,14 @@ public abstract class Buffer<T extends Buffer<T>> implements Cloneable {
     static byte[] copyOf(byte[] data, int length) {
         try {
             return Arrays.copyOf(data, length);
+        } catch (OutOfMemoryError oom) {
+            throw as(NO_MEMORY::new, oom, describeNoMemory(MinorAllocationFailure), MinorAllocationFailure, COMPLETED_MAYBE);
+        }
+    }
+
+    static byte[] copyOfRange(byte[] data, int from, int to) {
+        try {
+            return Arrays.copyOfRange(data, from, to);
         } catch (OutOfMemoryError oom) {
             throw as(NO_MEMORY::new, oom, describeNoMemory(MinorAllocationFailure), MinorAllocationFailure, COMPLETED_MAYBE);
         }
