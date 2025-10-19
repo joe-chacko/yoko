@@ -17,12 +17,14 @@
  */
 package org.apache.yoko.io;
 
+import org.apache.yoko.util.Hex;
 import org.apache.yoko.util.HexConverter;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
+import static org.apache.yoko.util.Hex.formatHexLine;
 import static org.apache.yoko.util.Hex.formatHexPara;
 
 public final class ReadBuffer extends Buffer<ReadBuffer> {
@@ -143,8 +145,8 @@ public final class ReadBuffer extends Buffer<ReadBuffer> {
         return sb;
     }
 
-    public void dumpSomeData(StringBuilder sb, String indent, int len) {
-        formatHexPara(indent, checkedBytes(0), position, len, sb);
+    public StringBuilder dumpSomeData(StringBuilder sb, String indent, int len) {
+        return formatHexPara(indent, checkedBytes(0), position, len, sb);
     }
 
     public ReadBuffer writeTo(OutputStream out) throws IOException {
