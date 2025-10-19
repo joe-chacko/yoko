@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,19 +125,29 @@ public enum Hex {
         return sb;
     }
 
-    /* Convert an octet buffer into a single-line readable data dump. */
-    public static void formatHexLine(byte[] oct, StringBuilder sb) {
-        formatHexLine(oct, 0, oct.length, sb);
+    public static StringBuilder hex(byte b, StringBuilder sb) {
+        // append the high hex nybble and the low hex nybble
+        return sb.append(HEX_DIGIT[(b & 0xF0) >> 4]).append(HEX_DIGIT[b & 0x0F]);
+    }
+
+    public static StringBuilder hex(byte[] ba, int start, int end, StringBuilder sb) {
+        for (int i = start; i < end; i++) hex(ba[i], sb);
+        return sb;
     }
 
     /* Convert an octet buffer into a single-line readable data dump. */
-    public static void formatHexLine(byte[] oct, int offset, int count, StringBuilder sb) {
-        if (count <= 0) return;
+    public static StringBuilder formatHexLine(byte[] oct, StringBuilder sb) {
+        return formatHexLine(oct, 0, oct.length, sb);
+    }
+
+    /* Convert an octet buffer into a single-line readable data dump. */
+    public static StringBuilder formatHexLine(byte[] oct, int offset, int count, StringBuilder sb) {
+        if (count <= 0) return sb;
         sb.append('"');
         for (int i = offset; i < offset + count; i++) {
             int n = oct[i] & 0xff;
             sb.append(n >= 32 && n <= 127 ? (char) n : '?');
         }
-        sb.append('"');
+        return sb.append('"');
     }
 }

@@ -22,7 +22,6 @@ import org.apache.yoko.io.ReadBuffer;
 import org.apache.yoko.io.WriteBuffer;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -78,51 +77,7 @@ class Utf8Test implements TestData {
     @ParameterizedTest(name = "Encode 4-byte UTF-8 char: {0} ({2})") @MethodSource("_4_ByteChars")
     void testEncode4ByteChar(String hex, int codepoint, String c) { checkEncoding(codepoint, c); }
 
-    @ParameterizedTest(name = "Invalid lead byte: 0x{0}")
-    @ValueSource(ints = {
-            0b1000_0000, // continuation byte (min)
-            0b1011_1111, // continuation byte (max)
-            0b1111_1000, // 5-byte encoding (unsupported)
-            0b1111_1100, // 6-byte encoding (unsupported)
-            0b1111_1110, // 7-byte encoding (unsupported)
-            0b1111_1111  // 8-or-more-byte encoding? (unsupported)
-    })
-    void testInvalidLeadBytes(int b) {
-        out.writeByte(b);
-        ReadBuffer in = out.trim().readFromStart();
-        assertEquals('\uFFFD', codec.readChar(in));
-    }
-
-    @ParameterizedTest(name = "Truncated encoding (one byte): 0x{0}")
-    @ValueSource(ints = {
-            0b1100_0000, // 2-byte encoding lead byte (min)
-            0b1101_1111, // 2-byte encoding lead byte (max)
-            0b1110_0000, // 3-byte encoding lead byte (min)
-            0b1110_1111, // 3-byte encoding lead byte (max)
-            0b1111_0000, // 4-byte encoding lead byte (min)
-            0b1111_0111, // 4-byte encoding lead byte (max)
-    })
-    void testTruncatedEncodingsOneByte(int b) {
-        out.writeByte(b);
-        ReadBuffer in = out.trim().readFromStart();
-        assertEquals('\uFFFD', codec.readChar(in));
-    }
-
-    @ParameterizedTest(name = "Truncated encoding (two bytes): 0x{0}")
-    @ValueSource(ints = {
-            0b1100_0000__0100_0001, // truncated two-byte encoding followed by valid char
-    })
-    void testTruncatedEncodingsTwoByte(int bytes) {
-        out.writeByte(0xFF & (bytes>>8)); // write byte 1
-        out.writeByte(0xFF & (bytes>>0)); // write byte 2
-        ReadBuffer in = out.trim().readFromStart();
-        assertEquals('\uFFFD', codec.readChar(in));
-        assertEquals('\0', codec.readChar(in));
-        assertEquals('\0', codec.readChar(in));
-        assertEquals('\0', codec.readChar(in));
-        assertEquals('\0', codec.readChar(in));
-        assertEquals('\0', codec.readChar(in));
-    }
+    // Invalid UTF-8 tests moved to Utf8InvalidTest.java
 
     private void checkDecoding(int codepoint, String expected) {
         ByteBuffer bb = UTF_8.encode(expected);

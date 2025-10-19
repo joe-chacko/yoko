@@ -34,7 +34,10 @@ import static org.apache.yoko.util.MinorCodes.MinorUTF8Encoding;
 import static org.omg.CORBA.CompletionStatus.COMPLETED_MAYBE;
 
 final class Utf8Codec implements CharCodec {
-    static class InternalException extends Exception { InternalException(String message) { super(message); } }
+    static class InternalException extends Exception {
+        InternalException(String message) { super(message); }
+        InternalException(String message, Throwable cause) { super(message, cause); }
+    }
 
     // These are the minimum acceptable values for the encoding length, indexed by the number of bytes.
     private static final int[] MIN_CODEPOINT = {-1, 0, 0x80, 0x800, 0x10000};
@@ -58,13 +61,14 @@ final class Utf8Codec implements CharCodec {
         // remember buffer position
         final int pos = in.getPosition() - 1;
         try {
-            int codepoint = readCodePoint(c, in);
+            final int codepoint;
+            codepoint = readCodePoint(c, in);
             int numBytes = in.getPosition() - pos;
             if (codepoint < MIN_CODEPOINT[numBytes]) {
                 // Permit a two-byte overlong encoding for NUL, because modified UTF-8 uses this.
                 if (2 == numBytes && codepoint == 0) return 0;
                 // In any other case, complain.
-                throw new InternalException(String.format("Overlong encoding: %d bytes used for codepoint 0x%06X", numBytes, codepoint));
+                throw new InternalException(String.format("Overlong encoding: %d bytes used for codepoint 0x%X", numBytes, codepoint));
             }
             // Note that we have not ruled out surrogate codepoints,
             // which would be encoded as 3-byte sequences by CESU-8 and modified UTF-8.
@@ -78,11 +82,13 @@ final class Utf8Codec implements CharCodec {
             in.skipBytes(-1);
             // return the high surrogate FIRST
             return highSurrogate(codepoint);
-        } catch (InternalException e) {
-            // May not have read all the bytes for a utf8 sequence because we stopped at the first junk byte.
-            // This could result in additional REPLACEMENT_CHAR in the output.
-            DATA_IN_LOG.log(WARNING, e.getMessage(), e);
-            DATA_IN_LOG.fine(in.dumpAllDataWithPosition());
+        } catch (Exception e) {
+            // something went wrong while reading a multi-byte encoding
+            DATA_IN_LOG.log(WARNING, e, () -> String.format("Bad input while reading multi-byte encoding beginning at position 0x%d: 0x%s", pos, in.toHex(pos, in.getPosition()).toUpperCase()));
+            DATA_IN_LOG.fine(in::dumpAllDataWithPosition);
+            // so return a replacement character and set the pointer just past this lead byte
+            // whatever follows should be interpreted independently of this unsatisfied lead byte
+            in.setPosition(pos + 1);
             return UNICODE_REPLACEMENT_CHAR;
         }
     }
