@@ -16,18 +16,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Pre-commit hook to check copyright messages
-# This hook runs the check-copyright.sh script against the staged changes
-# Get the root directory of the git repository
-ROOT_DIR=$(git rev-parse --show-toplevel)
-COPYRIGHT_SCRIPT="$ROOT_DIR/scripts/check-copyright2.sh"
-
-# # Check if the copyright script exists
-# if [ ! -f "$COPYRIGHT_SCRIPT" ]; then
-#     echo "Error: Copyright check script not found at $COPYRIGHT_SCRIPT"
-#     exit 1
-# fi
-
-# Run the copyright check against the staged changes.
-# If this fails, the hook will fail and stop the commit.
-$COPYRIGHT_SCRIPT --staged
+# In a non-bare repository, pre-commit hooks are run from the repository root.
+# A non-zero exit status will stop the commit.
+./scripts/check-copyright.sh --staged
