@@ -45,7 +45,8 @@
   }
 
   # Flag to indicate if we're checking only staged files
-  CHECK_STAGED=0
+  # Ensure it is not set to start with
+  unset -v CHECK_STAGED
 
   # Parse script options
   while [ $# -gt 0 ]; do
@@ -75,7 +76,7 @@
         ;;
       # -s or --staged checks only git staged files
       -s|--staged)
-        CHECK_STAGED=1
+        CHECK_STAGED="--staged"
         shift
         ;;
       # -- indicates the explicit end of options, so consume it and exit the loop
@@ -98,15 +99,15 @@
   command -v git > /dev/null 2>&1 || die "Can not find 'git' command."
 
   # Handle base ref requirement based on mode
-  if [ $CHECK_STAGED -eq 1 ]; then
+  if [ "$CHECK_STAGED" ]; then
     # Base ref is not required when checking only staged files
     BASE=""
+    [ $# -gt 0 ] && err "Unexpected positional parameter '$1' after --staged option."
     inf "Checking only staged files..."
   else
     # Check that base ref has been specified
-    [ -n "$1" ] || die "Missing required first parameter: git-base-ref"
+    [ "$1" ] || die "Missing required first parameter: git-base-ref"
     BASE="$1"
-
     # Check it is a valid ref
     git rev-parse --quiet --verify "$BASE" > /dev/null || die "Specified git base ref '$BASE' is not a valid ref in this repository."
   fi
@@ -129,10 +130,10 @@
   SOURCE_REF="${SOURCE_REF:-$BASE}"
 
   # Look for unsupported changes with Broken (B), changed (T), Unmerged (U), or Unknown (X) status
-  BAD_FILES="$(git diff ${CHECK_STAGED:+--staged} --name-status --diff-filter=BTUX $SOURCE_REF)"
+  BAD_FILES="$(git diff $CHECK_STAGED --name-status --diff-filter=BTUX $SOURCE_REF)"
 
   # Log deleted files
-  git diff ${CHECK_STAGED:+--staged} --name-only --diff-filter=D $SOURCE_REF | sed 's/^/🫥 Ignoring deleted file: /' | log
+  git diff $CHECK_STAGED --name-only --diff-filter=D $SOURCE_REF | sed 's/^/🫥 Ignoring deleted file: /' | log
 
   [ -z "$BAD_FILES" ] || {
     err "‼️ This script ($0) may need fixing to deal with more types of change."
@@ -172,7 +173,7 @@
       }
 
       # Get file content based on mode
-      if [ $CHECK_STAGED -eq 1 ]; then
+      if [ "$CHECK_STAGED" ]; then
         # For staged files, check the staged version
         fileContent=$(git show ":$filePath")
         # For staged files, always use the current year
@@ -214,22 +215,22 @@
   # So check whether the contents have changed significantly.
 
   # Check for added and modified files
-  if [ $CHECK_STAGED -eq 1 ]; then
+  if [ "$CHECK_STAGED" ]; then
     inf "Checking staged added and modified files..."
   else
     inf "Checking added and modified files..."
   fi
 
-  FAILED=$((FAILED + $(git diff ${CHECK_STAGED:+--staged} --name-only --find-copies-harder --diff-filter=AM $SOURCE_REF | reportBadCopyright | wc -l)))
+  FAILED=$((FAILED + $(git diff $CHECK_STAGED --name-only --find-copies-harder --diff-filter=AM $SOURCE_REF | reportBadCopyright | wc -l)))
 
   # Check for renamed and copied files
-  if [ $CHECK_STAGED -eq 1 ]; then
+  if [ "$CHECK_STAGED" ]; then
     inf "Checking staged renamed and copied files..."
   else
     inf "Checking renamed and copied files..."
   fi
 
-  OUTPUT="$(git diff ${CHECK_STAGED:+--staged} --name-status --find-copies-harder --diff-filter=CR -z $SOURCE_REF 2>/dev/null | tr '\0' '\n')"
+  OUTPUT="$(git diff $CHECK_STAGED --name-status --find-copies-harder --diff-filter=CR -z $SOURCE_REF 2>/dev/null | tr '\0' '\n')"
   FAILED=$((FAILED + $(echo "$OUTPUT"| ignoreCopiesAndRenames | reportBadCopyright | wc -l)))
   exit $FAILED
 )
