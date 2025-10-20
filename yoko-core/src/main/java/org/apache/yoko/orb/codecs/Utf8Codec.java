@@ -29,6 +29,7 @@ import static java.lang.Character.toCodePoint;
 import static java.util.logging.Level.WARNING;
 import static org.apache.yoko.logging.VerboseLogging.DATA_IN_LOG;
 import static org.apache.yoko.logging.VerboseLogging.DATA_OUT_LOG;
+import static org.apache.yoko.orb.codecs.Util.ASCII_REPLACEMENT_BYTE;
 import static org.apache.yoko.orb.codecs.Util.UNICODE_REPLACEMENT_CHAR;
 import static org.apache.yoko.util.MinorCodes.MinorUTF8Encoding;
 import static org.omg.CORBA.CompletionStatus.COMPLETED_MAYBE;
@@ -121,13 +122,21 @@ final class Utf8Codec implements CharCodec {
                     if (isHighSurrogate(c)) throw new InternalException(String.format("Received two high surrogates in a row: 0x%04X 0x%04X", highSurrogate, c));
                     if (!isLowSurrogate(c)) throw new InternalException(String.format("Expected low surrogate but received: 0x%04X", (int) c));
                     codepoint = toCodePoint(highSurrogate, c);
+                    // undo the replacement byte written out when the high surrogate was received
+                    out.rewind(1);
                 } finally {
                     highSurrogate = 0;
                 }
             } else {
-                if (isLowSurrogate(c)) throw new InternalException(String.format("Received unexpected low surrogate: 0x%04X", (int) c));
                 if (isHighSurrogate(c)) {
                     highSurrogate = c;
+                    // write a '?' in case we never get the low surrogate
+                    out.writeByte(ASCII_REPLACEMENT_BYTE);
+                    return;
+                }
+                if (isLowSurrogate(c)) {
+                    DATA_OUT_LOG.warning(String.format("Received unexpected low surrogate: 0x%04X", (int) c));
+                    out.writeByte(ASCII_REPLACEMENT_BYTE);
                     return;
                 }
                 codepoint = c;
