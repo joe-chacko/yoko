@@ -20,9 +20,12 @@ package org.apache.yoko.orb.codecs;
 import org.apache.yoko.io.Buffer;
 import org.apache.yoko.io.ReadBuffer;
 import org.apache.yoko.io.WriteBuffer;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.omg.CORBA.DATA_CONVERSION;
+import org.omg.CORBA.MARSHAL;
 
 import java.util.stream.IntStream;
 
@@ -139,4 +142,18 @@ class Utf8InvalidTest implements TestData {
         assertEquals('\uFFFD', codec.readChar(in));
         assertEquals('\uFFFD', codec.readChar(in));
     }
+
+    @Test
+    void testEncodeHighSurrogateOnly() {
+        codec.writeChar('\uD800', out);
+        assertEquals(0, out.getPosition(), "Nothing should have been written yet");
+        assertThrows(DATA_CONVERSION.class, codec::assertNoBufferedCharData, "High surrogate alone cannot be encoded in UTF-8");
+    }
+
+    @Test
+    void testEncodeLowSurrogateOnly() {
+        assertThrows(DATA_CONVERSION.class, () -> codec.writeChar('\uDC00', out));
+        assertEquals(0, out.getPosition(), "No data should have been written");
+    }
+
 }
