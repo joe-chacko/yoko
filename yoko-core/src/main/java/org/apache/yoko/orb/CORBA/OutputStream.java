@@ -581,34 +581,30 @@ public final class OutputStream extends org.omg.CORBA_2_3.portable.OutputStream 
         writeBuffer.writeShort(value);
     }
 
-    public void write_ushort(short value) {
-        write_short(value);
-    }
+    public void write_ushort(short value) { write_short(value); }
 
     public void write_long(int value) {
         addCapacity(4, FOUR_BYTE_BOUNDARY);
         writeBuffer.writeInt(value);
     }
 
-    public void write_ulong(int value) {
-        write_long(value);
-    }
+    public void write_ulong(int value) { write_long(value); }
 
     public void write_longlong(long value) {
         addCapacity(8, EIGHT_BYTE_BOUNDARY);
         writeBuffer.writeLong(value);
     }
 
-    public void write_ulonglong(long value) {
-        write_longlong(value);
-    }
+    public void write_ulonglong(long value) { write_longlong(value); }
 
     public void write_float(float value) {
-        write_long(Float.floatToIntBits(value));
+        addCapacity(4, FOUR_BYTE_BOUNDARY);
+        writeBuffer.writeFloat(value);
     }
 
     public void write_double(double value) {
-        write_longlong(Double.doubleToLongBits(value));
+        addCapacity(8, EIGHT_BYTE_BOUNDARY);
+        writeBuffer.writeDouble(value);
     }
 
     public void write_string(String value) {

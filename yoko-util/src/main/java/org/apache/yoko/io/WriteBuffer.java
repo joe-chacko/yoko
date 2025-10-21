@@ -23,6 +23,9 @@ import java.io.InterruptedIOException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import static java.lang.Double.doubleToRawLongBits;
+import static java.lang.Float.floatToRawIntBits;
+
 @SuppressWarnings({"PointlessBitwiseExpression", "OctalInteger"})
 public final class WriteBuffer extends Buffer<WriteBuffer> {
     private static final byte PAD_BYTE = (byte) 0xBD;
@@ -113,6 +116,10 @@ public final class WriteBuffer extends Buffer<WriteBuffer> {
         return this;
     }
 
+    public WriteBuffer writeFloat(float value) { return writeInt(floatToRawIntBits(value)); }
+
+    public WriteBuffer writeDouble(double value) { return writeLong(doubleToRawLongBits(value)); }
+
     /**
      * Leaves a 4 byte space to write a length. When {@link SimplyCloseable#close()} is called,
      * the number of intervening bytes is written as a length to the remembered location.
@@ -123,16 +130,14 @@ public final class WriteBuffer extends Buffer<WriteBuffer> {
         logger.finest("Writing a gap value for a length at offset " + lengthPosition);
 
         pad(4);
-        return new SimplyCloseable() {
-            public void close() {
-                final int length = position - (lengthPosition + 4);
-                byte[] data = uncheckedBytes();
-                data[lengthPosition + 0] = (byte) (length >> 030);
-                data[lengthPosition + 1] = (byte) (length >> 020);
-                data[lengthPosition + 2] = (byte) (length >> 010);
-                data[lengthPosition + 3] = (byte) (length >> 000);
-                logger.finest("Wrote a length value of " + length + " at offset " + lengthPosition);
-            }
+        return () -> {
+            final int length = position - (lengthPosition + 4);
+            byte[] data = uncheckedBytes();
+            data[lengthPosition + 0] = (byte) (length >> 030);
+            data[lengthPosition + 1] = (byte) (length >> 020);
+            data[lengthPosition + 2] = (byte) (length >> 010);
+            data[lengthPosition + 3] = (byte) (length >> 000);
+            logger.finest("Wrote a length value of " + length + " at offset " + lengthPosition);
         };
     }
 
