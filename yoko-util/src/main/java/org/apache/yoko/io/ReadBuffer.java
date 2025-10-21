@@ -129,7 +129,7 @@ public final class ReadBuffer extends Buffer<ReadBuffer> {
 
     public String dumpRemainingData() {
         StringBuilder dump = new StringBuilder();
-        dump.append(String.format("Read pos=0x%x Core len=0x%x Remaining core data=%n%n", position, length()));
+        dump.append(String.format("Read pos=0x%x Core len=0x%x Remaining core data=%n%n", position, available()));
         return formatHexPara(checkedBytes(0), position, available(), dump).toString();
     }
 
