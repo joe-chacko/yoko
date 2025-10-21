@@ -18,6 +18,7 @@
 package org.apache.yoko.io;
 
 import org.apache.yoko.util.Assert;
+import org.apache.yoko.util.Hex;
 import org.omg.CORBA.INTERNAL;
 import org.omg.CORBA.NO_MEMORY;
 
@@ -27,13 +28,17 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.apache.yoko.util.Exceptions.as;
 import static org.apache.yoko.util.Hex.formatHexPara;
+import static org.apache.yoko.util.Hex.hex;
 import static org.apache.yoko.util.MinorCodes.MinorAllocationFailure;
 import static org.apache.yoko.util.MinorCodes.describeNoMemory;
 import static org.omg.CORBA.CompletionStatus.COMPLETED_MAYBE;
 
 /**
- * A growable buffer for holding data as a byte array.
- * This class serves as a factory for creating buffers for reading or writing.
+ * Manage reading of primitive data from a growable buffer, with optional boundary alignment.
+ * The general contract of this class is that an attempt to go past the logical end of the buffer will fail.
+ * Responsibility for checking the buffer has data/capacity and is aligned correctly remain with the caller.
+ *
+ * This class also serves as a factory for creating buffers for reading or writing.
  * @param <T> the concrete child class
  */
 @SuppressWarnings("unchecked")
@@ -120,7 +125,7 @@ public abstract class Buffer<T extends Buffer<T>> implements Cloneable {
         }
     }
 
-    final Core core;
+    private final Core core;
     int position = 0;
 
     Buffer(Core core) { this.core = core; }
@@ -129,6 +134,7 @@ public abstract class Buffer<T extends Buffer<T>> implements Cloneable {
     public final int getPosition() { return position; }
     public final int available() { return length() - position; }
     public final int length() { return core.length; }
+    final boolean growBy(int numBytes) { return core.growBy(numBytes); }
 
     public final T clone() {
         try {
@@ -138,8 +144,8 @@ public abstract class Buffer<T extends Buffer<T>> implements Cloneable {
         }
     }
 
-    public final boolean dataEquals(T that) {
-        return this == that || that != null && this.core.dataEquals(that.core);
+    public final boolean dataEquals(Buffer<T> that) {
+        return this == that || null != that && this.core.dataEquals(that.core);
     }
 
     public final String dumpPosition() { return String.format("position=0x%x", position); }
@@ -148,7 +154,22 @@ public abstract class Buffer<T extends Buffer<T>> implements Cloneable {
 
     public final T setPosition(int p) { position = p; return (T)this; }
     public final T rewind(int n) { position -= n; return (T)this;}
-    public abstract ReadBuffer newReadBuffer();
+
+    public T trim() {
+        core.length = position;
+        return (T) this;
+    }
+
+    byte[] checkedBytes(int size) {
+        if (available() < size) throw new IndexOutOfBoundsException();
+        return core.data;
+    }
+
+    byte[] uncheckedBytes() { return core.data; }
+
+    public String toHex(int start, int end) { return hex(core.data, start, end, new StringBuilder()).toString(); }
+
+    public ReadBuffer newReadBuffer() { return new ReadBuffer(core); } // resets position to 0
 
     static byte[] copyOf(byte[] data, int length) {
         try {

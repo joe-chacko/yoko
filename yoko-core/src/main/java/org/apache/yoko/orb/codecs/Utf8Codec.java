@@ -29,12 +29,16 @@ import static java.lang.Character.toCodePoint;
 import static java.util.logging.Level.WARNING;
 import static org.apache.yoko.logging.VerboseLogging.DATA_IN_LOG;
 import static org.apache.yoko.logging.VerboseLogging.DATA_OUT_LOG;
+import static org.apache.yoko.orb.codecs.Util.ASCII_REPLACEMENT_BYTE;
 import static org.apache.yoko.orb.codecs.Util.UNICODE_REPLACEMENT_CHAR;
 import static org.apache.yoko.util.MinorCodes.MinorUTF8Encoding;
 import static org.omg.CORBA.CompletionStatus.COMPLETED_MAYBE;
 
 final class Utf8Codec implements CharCodec {
-    static class InternalException extends Exception { InternalException(String message) { super(message); } }
+    static class InternalException extends Exception {
+        InternalException(String message) { super(message); }
+        InternalException(String message, Throwable cause) { super(message, cause); }
+    }
 
     // These are the minimum acceptable values for the encoding length, indexed by the number of bytes.
     private static final int[] MIN_CODEPOINT = {-1, 0, 0x80, 0x800, 0x10000};
@@ -58,13 +62,14 @@ final class Utf8Codec implements CharCodec {
         // remember buffer position
         final int pos = in.getPosition() - 1;
         try {
-            int codepoint = readCodePoint(c, in);
+            final int codepoint;
+            codepoint = readCodePoint(c, in);
             int numBytes = in.getPosition() - pos;
             if (codepoint < MIN_CODEPOINT[numBytes]) {
                 // Permit a two-byte overlong encoding for NUL, because modified UTF-8 uses this.
                 if (2 == numBytes && codepoint == 0) return 0;
                 // In any other case, complain.
-                throw new InternalException(String.format("Overlong encoding: %d bytes used for codepoint 0x%06X", numBytes, codepoint));
+                throw new InternalException(String.format("Overlong encoding: %d bytes used for codepoint 0x%X", numBytes, codepoint));
             }
             // Note that we have not ruled out surrogate codepoints,
             // which would be encoded as 3-byte sequences by CESU-8 and modified UTF-8.
@@ -78,11 +83,13 @@ final class Utf8Codec implements CharCodec {
             in.skipBytes(-1);
             // return the high surrogate FIRST
             return highSurrogate(codepoint);
-        } catch (InternalException e) {
-            // May not have read all the bytes for a utf8 sequence because we stopped at the first junk byte.
-            // This could result in additional REPLACEMENT_CHAR in the output.
-            DATA_IN_LOG.log(WARNING, e.getMessage(), e);
-            DATA_IN_LOG.fine(in.dumpAllDataWithPosition());
+        } catch (Exception e) {
+            // something went wrong while reading a multi-byte encoding
+            DATA_IN_LOG.log(WARNING, e, () -> String.format("Bad input while reading multi-byte encoding beginning at position 0x%d: 0x%s", pos, in.toHex(pos, in.getPosition()).toUpperCase()));
+            DATA_IN_LOG.fine(in::dumpAllDataWithPosition);
+            // so return a replacement character and set the pointer just past this lead byte
+            // whatever follows should be interpreted independently of this unsatisfied lead byte
+            in.setPosition(pos + 1);
             return UNICODE_REPLACEMENT_CHAR;
         }
     }
@@ -115,13 +122,21 @@ final class Utf8Codec implements CharCodec {
                     if (isHighSurrogate(c)) throw new InternalException(String.format("Received two high surrogates in a row: 0x%04X 0x%04X", highSurrogate, c));
                     if (!isLowSurrogate(c)) throw new InternalException(String.format("Expected low surrogate but received: 0x%04X", (int) c));
                     codepoint = toCodePoint(highSurrogate, c);
+                    // undo the replacement byte written out when the high surrogate was received
+                    out.rewind(1);
                 } finally {
                     highSurrogate = 0;
                 }
             } else {
-                if (isLowSurrogate(c)) throw new InternalException(String.format("Received unexpected low surrogate: 0x%04X", (int) c));
                 if (isHighSurrogate(c)) {
                     highSurrogate = c;
+                    // write a '?' in case we never get the low surrogate
+                    out.writeByte(ASCII_REPLACEMENT_BYTE);
+                    return;
+                }
+                if (isLowSurrogate(c)) {
+                    DATA_OUT_LOG.warning(String.format("Received unexpected low surrogate: 0x%04X", (int) c));
+                    out.writeByte(ASCII_REPLACEMENT_BYTE);
                     return;
                 }
                 codepoint = c;
