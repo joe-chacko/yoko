@@ -20,10 +20,8 @@ package org.apache.yoko.orb.codecs;
 import org.apache.yoko.io.Buffer;
 import org.apache.yoko.io.ReadBuffer;
 import org.apache.yoko.io.WriteBuffer;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -55,59 +53,31 @@ class Utf8Test implements TestData {
     }
     static Stream<Object[]> _4_ByteChars() { return testRange(MIN_4_BYTE, MIN_4_BYTE+0xFFFF).mapToObj(TestData::toHexIntAndString); }
 
-    @ParameterizedTest(name = "Encode {0} {2}") @MethodSource("_1_ByteChars")
+    @ParameterizedTest(name = "Decode 1-byte UTF-8 char: {0} ({2})") @MethodSource("_1_ByteChars")
     void testDecode1ByteChar(String hex, int codepoint, String c) { checkDecoding(codepoint, c); }
 
-    @ParameterizedTest(name = "Encode {0} {2}") @MethodSource("_1_ByteChars")
+    @ParameterizedTest(name = "Encode 1-byte UTF-8 char: {0} ({2})") @MethodSource("_1_ByteChars")
     void testEncode1ByteChar(String hex, int codepoint, String c) { checkEncoding(codepoint, c); }
 
-    @ParameterizedTest(name = "Encode {0} {2}") @MethodSource("_2_ByteChars")
+    @ParameterizedTest(name = "Decode 2-byte UTF-8 char: {0} ({2})") @MethodSource("_2_ByteChars")
     void testDecode2ByteChar(String hex, int codepoint, String c) { checkDecoding(codepoint, c); }
 
-    @ParameterizedTest(name = "Encode {0} {2}") @MethodSource("_2_ByteChars")
+    @ParameterizedTest(name = "Encode 2-byte UTF-8 char: {0} ({2})") @MethodSource("_2_ByteChars")
     void testEncode2ByteChar(String hex, int codepoint, String c) { checkEncoding(codepoint, c); }
 
-    @ParameterizedTest(name = "Encode {0} {2}") @MethodSource("_3_ByteChars")
+    @ParameterizedTest(name = "Decode 3-byte UTF-8 char: {0} ({2})") @MethodSource("_3_ByteChars")
     void testDecode3ByteChar(String hex, int codepoint, String c) { checkDecoding(codepoint, c); }
 
-    @ParameterizedTest(name = "Encode {0} {2}") @MethodSource("_3_ByteChars")
+    @ParameterizedTest(name = "Encode 3-byte UTF-8 char: {0} ({2})") @MethodSource("_3_ByteChars")
     void testEncode3ByteChar(String hex, int codepoint, String c) { checkEncoding(codepoint, c); }
 
-    @ParameterizedTest(name = "Encode {0} {2}") @MethodSource("_4_ByteChars")
+    @ParameterizedTest(name = "Decode 4-byte UTF-8 char: {0} ({2})") @MethodSource("_4_ByteChars")
     void testDecode4ByteChar(String hex, int codepoint, String c) { checkDecoding(codepoint, c); }
 
-    @ParameterizedTest(name = "Encode {0} {2}") @MethodSource("_4_ByteChars")
+    @ParameterizedTest(name = "Encode 4-byte UTF-8 char: {0} ({2})") @MethodSource("_4_ByteChars")
     void testEncode4ByteChar(String hex, int codepoint, String c) { checkEncoding(codepoint, c); }
 
-    @ParameterizedTest
-    @ValueSource(ints = {
-            0b1000_0000, // continuation byte (min)
-            0b1011_1111, // continuation byte (max)
-            0b1111_1000, // 5-byte encoding (unsupported)
-            0b1111_1100, // 6-byte encoding (unsupported)
-            0b1111_1110, // 7-byte encoding (unsupported)
-            0b1111_1111  // 8-or-more-byte encoding? (unsupported)
-    })
-    void testInvalidLeadBytes(int b) {
-        out.writeByte(b);
-        ReadBuffer in = out.trim().readFromStart();
-        assertEquals('\uFFFD', codec.readChar(in));
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = {
-            0b1100_0000, // 2-byte encoding lead byte (min)
-            0b1101_1111, // 2-byte encoding lead byte (max)
-            0b1110_0000, // 3-byte encoding lead byte (min)
-            0b1110_1111, // 3-byte encoding lead byte (max)
-            0b1111_0000, // 4-byte encoding lead byte (min)
-            0b1111_0111, // 4-byte encoding lead byte (max)
-    })
-    void testTruncatedEncodingsOneByte(int b) {
-        out.writeByte(b);
-        ReadBuffer in = out.trim().readFromStart();
-        assertEquals('\uFFFD', codec.readChar(in));
-    }
+    // Invalid UTF-8 tests moved to Utf8InvalidTest.java
 
     private void checkDecoding(int codepoint, String expected) {
         ByteBuffer bb = UTF_8.encode(expected);
