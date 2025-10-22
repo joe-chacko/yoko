@@ -22,3 +22,5 @@ exclude **/*.md
 # Don't check copyright or licenses in IDL files from the OMG
 exclude yoko-spec-corba/**/*.idl
 
+# Obviously don't bother checking the detect-secrets baseline!
+exclude .secrets.baseline
