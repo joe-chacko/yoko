@@ -14,18 +14,21 @@ It is an open-source project maintained by IBM, forked from Apache Yoko.
 1. Run `sdk env` to initialise the environment.
 1. Run `gradle build` to build and test Yoko.
 
-## Recommended steps to develop Yoko on Linux
+## Recommended steps to develop Yoko
+(We recommend using Linux: YMMV on other platforms.)
 
 1. Fork Yoko on Github
-1. Clone your fork into a local git repository.
-1. While inside the repository, run `git config set --append include.path "../.gitconfig"`
-  This will include the versioned config from the project along with any config specific to your local repository.
-1. Create a new branch for your work.
-1. Make your changes.
-1. Run `gradle build` to build and test Yoko.
-1. Commit your changes.
-1. Push your changes to your fork.
-1. Create a pull request to merge your changes into the main repository.
+2. Clone your fork into a local git repository.
+3. Setup the Python pre-commit framework:
+    1) Install Python 3.6 or later
+    2) Install pre-commit: `pip install pre-commit`
+    3) Run `pre-commit install` to install the pre-commit framework and the hooks.
+4. Create a new branch for your work.
+5. Make your changes.
+6. Run `gradle build` to build and test Yoko.
+7. Commit your changes.
+8. Push your changes to your fork.
+9. Create a pull request to merge your changes into the main repository.
 
 # Testify
 
