@@ -20,6 +20,8 @@
 (
   # Stop on first unexpected error
   set -e
+  # Disable globbing
+  set -f
 
   usage() {
     echo "usage:\t$0 [-q|--quiet|-t|--terse|-v|--verbose|--staged] git-base-ref"
@@ -43,6 +45,11 @@
     err "$@"
     exit 1
   }
+
+  # ensure this script is run from the root of the local git repo
+  [ -f .git/HEAD ] || die "This script must be run from the root of the local git repository."
+  SCRIPT_NAME="$(basename "$0" .sh)"
+  RC_FILE="./.$SCRIPT_NAME.rc"
 
   # Flag to indicate if we're checking only staged files
   # Ensure it is not set to start with
@@ -97,6 +104,44 @@
 
   # Check that git is a command
   command -v git > /dev/null 2>&1 || die "Can not find 'git' command."
+
+  # define functions used in the RC file
+  EXCLUDE_PATTERN=""
+  exclude() {
+    local pattern
+    while [ $# -gt 0 ]; do
+      pattern="$1"
+      shift
+      # Validate input is not empty
+      [ "$pattern" ] || { err "Warning: Empty exclude pattern ignored"; continue; }
+
+      log "Excluding pattern: '$pattern'"
+      # Convert glob pattern to regex pattern
+      # encase each special character in square brackets to make it literal
+      # **/ should match multiple whole dirs
+      # * should match within a dir or filename
+      # ? should match a single character
+      pattern="$(echo "$pattern" | sed -E '
+        s@([].{}+^$|()\[])@[\1]@g;
+        s@[*][*]/@(.{0,}/){0,1}@g;
+        s@[*]@[^/]{0,}@g;
+        s@[?]@.@g;
+        s@[{]0,}@*@g;
+        s@[{]0,1}@?@g;
+      ')"
+
+      # Add to exclude pattern with proper separator if not empty
+      EXCLUDE_PATTERN="$EXCLUDE_PATTERN${EXCLUDE_PATTERN:+|}${pattern}"
+      log "New exclude pattern: '$EXCLUDE_PATTERN'"
+    done
+
+    # Return success
+    return 0
+  }
+
+  # run the .rc file
+  . "$RC_FILE"
+
 
   # Handle base ref requirement based on mode
   if [ "$CHECK_STAGED" ]; then
@@ -167,8 +212,8 @@
     while read filePath; do
       [ -f "$filePath" ] || die "Cannot check copyright in non-existent file: '$filePath'"
       # ignore markdown files
-      [ "${filePath%.md}" == "$filePath" ] || {
-        log "🫥 Ignoring markdown file: $filePath"
+      echo "$filePath" | grep -Eqvx "$EXCLUDE_PATTERN" || {
+        log "🙈 Ignoring excluded file: $filePath"
         continue
       }
 
@@ -231,6 +276,6 @@
   fi
 
   OUTPUT="$(git diff $CHECK_STAGED --name-status --find-copies-harder --diff-filter=CR -z $SOURCE_REF 2>/dev/null | tr '\0' '\n')"
-  FAILED=$((FAILED + $(echo "$OUTPUT"| ignoreCopiesAndRenames | reportBadCopyright | wc -l)))
+  FAILED=$((FAILED + $(echo "$OUTPUT" | ignoreCopiesAndRenames | reportBadCopyright | wc -l)))
   exit $FAILED
 )
