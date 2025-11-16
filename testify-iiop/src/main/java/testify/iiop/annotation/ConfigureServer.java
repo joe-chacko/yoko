@@ -59,6 +59,8 @@ import static testify.iiop.annotation.OrbSteward.getActivatedRootPoa;
 @ExtendWith({ LoggingExtension.class, ServerExtension.class }) // ensure ordering in case logging is enabled
 @Target({ANNOTATION_TYPE, TYPE})
 @ConfigurePartRunner
+// Use the ORB configured for the test as the client ORB
+@ConfigureOrb(CLIENT_ORB)
 @Retention(RUNTIME)
 @Inherited
 public @interface ConfigureServer {
@@ -68,9 +70,6 @@ public @interface ConfigureServer {
     ServerName serverName() default DEFAULT_SERVER;
     Separation separation() default INTER_ORB;
     String[] jvmArgs() default {};
-
-    /** Define the config for the ORB the client for this server will use. */
-    ConfigureOrb clientOrb() default @ConfigureOrb(CLIENT_ORB);
 
     /** Define the config for the ORB this server will use. */
     ConfigureOrb serverOrb() default @ConfigureOrb(SERVER_ORB);

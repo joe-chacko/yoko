@@ -26,6 +26,7 @@ import org.omg.CosNaming.NamingContextHelper;
 import testify.annotation.Summoner;
 import testify.annotation.runner.AnnotationButler;
 import testify.bus.Bus;
+import testify.iiop.annotation.ConfigureOrb.OrbId;
 import testify.iiop.annotation.ConfigureOrb.UseWithOrb;
 import testify.parts.PartRunner;
 
@@ -45,11 +46,13 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.joining;
 import static javax.rmi.PortableRemoteObject.narrow;
 import static org.hamcrest.CoreMatchers.anyOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.platform.commons.support.AnnotationSupport.findAnnotation;
 import static testify.annotation.runner.PartRunnerSteward.requirePartRunner;
 import static testify.bus.key.MemberKey.getMemberEvaluationType;
+import static testify.iiop.annotation.ConfigureOrb.OrbId.CLIENT_ORB;
 import static testify.iiop.annotation.OrbSteward.args;
 import static testify.iiop.annotation.OrbSteward.props;
 import static testify.util.Assertions.failf;
@@ -271,8 +274,10 @@ class ServerSteward {
     }
 
     public ORB getClientOrb() {
-        // TODO: make the client ORB a field that is initialized early
-        return config.separation() == ConfigureServer.Separation.COLLOCATED ? serverComms.getServerOrb().orElseThrow(Error::new) : OrbSteward.getOrb(context, config.clientOrb());
+        // get the prevailing client orb config.
+        ConfigureOrb clientCfg = context.getTestClass().flatMap(cls -> findAnnotation(cls, ConfigureOrb.class)).orElseThrow(Error::new);
+        assertEquals(CLIENT_ORB, clientCfg.value(), "Tests that configure a server should configure their primary ORB with a client id");
+        return OrbSteward.getOrb(context, clientCfg);
     }
 
     public void beforeEach(ExtensionContext ctx) {
