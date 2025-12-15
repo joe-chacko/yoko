@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public enum PolicyValue {
         this.factory = factory;
     }
 
-    static POA create_POA(String id, POA parentPoa, POAManager poaMgr, PolicyValue...policies) throws InvalidPolicy, AdapterAlreadyExists {
+    public static POA create_POA(String id, POA parentPoa, POAManager poaMgr, PolicyValue...policies) throws InvalidPolicy, AdapterAlreadyExists {
         Policy[] policyList = Stream.of(policies)
                 .map(policy -> policy.factory.apply(parentPoa))
                 .toArray(Policy[]::new);
