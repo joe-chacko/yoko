@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.apache.yoko.util;
 
 import org.omg.IOP.ServiceContext;
 
-import static org.apache.yoko.util.HexConverter.octetsToAscii;
+import static org.apache.yoko.util.HexConverter.toHex;
 
 /**
  * Format objects as strings for easy readability,
@@ -28,10 +28,6 @@ import static org.apache.yoko.util.HexConverter.octetsToAscii;
 public enum ObjectFormatter {
     ;
     public static String format(ServiceContext sc) {
-        return String.format("Service Context [0x%08x] = %s", sc.context_id, hex(sc));
-    }
-
-    private static String hex(ServiceContext sc) {
-        return octetsToAscii(sc.context_data);
+        return String.format("Service Context [0x%08x] = %s", sc.context_id, toHex(sc.context_data));
     }
 }

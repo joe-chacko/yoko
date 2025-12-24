@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,19 @@
  */
 package org.apache.yoko.orb.OB;
 
+import org.apache.yoko.orb.CORBA.InputStream;
+import org.junit.jupiter.api.Test;
+import org.omg.CORBA.ORB;
+import org.omg.IOP.IOR;
+import org.omg.IOP.IORHelper;
+import testify.iiop.annotation.ConfigureOrb;
+
+import static org.apache.yoko.util.HexConverter.fromHex;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import org.apache.yoko.orb.CORBA.InputStream;
-import org.apache.yoko.util.HexConverter;
-import org.junit.jupiter.api.Test;
-import org.omg.CORBA.ORB;
-import org.omg.IOP.IOR;
-import org.omg.IOP.IORHelper;
-
-import testify.iiop.annotation.ConfigureOrb;
 
 @ConfigureOrb
 public class IORDumpTest {
@@ -50,7 +49,7 @@ public class IORDumpTest {
     }
 
     private String describe(String ref) {
-        byte[] data = HexConverter.asciiToOctets(ref, 4);
+        byte[] data = fromHex(ref, 4);
         assertThat(data, is(not(nullValue())));
         InputStream in = new InputStream(data);
         in._OB_readEndian();

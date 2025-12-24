@@ -47,45 +47,45 @@ public class HexConverterTest {
     public String hex;
 
     @Test
-    public void testAsciiToOctets() {
-        assertThat(asciiToOctets(hex), matchesHex(hex));
+    public void testFromHex() {
+        assertThat(fromHex(hex), matchesHex(hex));
     }
 
     @Test
-    public void testAsciiToOctetsWithOffset() {
+    public void testFromHexWithOffset() {
         int hexlen = hex.length();
         switch(hexlen) {
             default:
                 fail("Unhandled hex string length: " + hex);
             case 8:
-                assertThat(asciiToOctets(hex, hexlen - 6), matchesHex(hex.substring(hexlen - 6)));
+                assertThat(fromHex(hex, hexlen - 6), matchesHex(hex.substring(hexlen - 6)));
             case 6:
-                assertThat(asciiToOctets(hex, hexlen - 4), matchesHex(hex.substring(hexlen - 4)));
+                assertThat(fromHex(hex, hexlen - 4), matchesHex(hex.substring(hexlen - 4)));
             case 4:
-                assertThat(asciiToOctets(hex, hexlen - 2), matchesHex(hex.substring(hexlen - 2)));
+                assertThat(fromHex(hex, hexlen - 2), matchesHex(hex.substring(hexlen - 2)));
             case 2:
             case 0:
-                assertThat(asciiToOctets(hex, 0), matchesHex(hex));
+                assertThat(fromHex(hex, 0), matchesHex(hex));
         }
-        assertThat(asciiToOctets(hex), matchesHex(hex));
+        assertThat(fromHex(hex), matchesHex(hex));
     }
 
     @Test
-    public void testOctetsToAscii() {
+    public void testToHex() {
         byte[] bytes = bytes(hex);
         switch(bytes.length) {
             default:
                 fail("Unhandled byte string length: " + hex);
             case 4:
-                assertThat(octetsToAscii(bytes,4), is(hex.substring(0, 8)));
+                assertThat(toHex(bytes,4), is(hex.substring(0, 8)));
             case 3:
-                assertThat(octetsToAscii(bytes,3), is(hex.substring(0, 6)));
+                assertThat(toHex(bytes,3), is(hex.substring(0, 6)));
             case 2:
-                assertThat(octetsToAscii(bytes,2), is(hex.substring(0, 4)));
+                assertThat(toHex(bytes,2), is(hex.substring(0, 4)));
             case 1:
-                assertThat(octetsToAscii(bytes,1), is(hex.substring(0, 2)));
+                assertThat(toHex(bytes,1), is(hex.substring(0, 2)));
             case 0:
-                assertThat(octetsToAscii(bytes,0), is(""));
+                assertThat(toHex(bytes,0), is(""));
         }
     }
 

@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 import static java.util.Arrays.copyOf;
 import static java.util.logging.Level.WARNING;
 import static org.apache.yoko.util.Collectors.toUnmodifiableMap;
-import static org.apache.yoko.util.HexConverter.octetsToAscii;
+import static org.apache.yoko.util.HexConverter.toHex;
 import static org.apache.yoko.util.rofl.Rofl.RemoteOrb.BAD;
 import static org.apache.yoko.util.rofl.Rofl.RemoteOrb.IBM;
 import static org.apache.yoko.util.rofl.Rofl.RemoteOrb.NO_DATA;
@@ -157,7 +157,7 @@ public interface Rofl extends Serializable {
             this.cause = cause;
         }
         public RemoteOrb type()  { return BAD; }
-        public String toString() { return String.format("UNKNOWN ORB[%s(0x%08x) data=%s cause=%s]", sourceType, id, octetsToAscii(data), cause); }
+        public String toString() { return String.format("UNKNOWN ORB[%s(0x%08x) data=%s cause=%s]", sourceType, id, toHex(data), cause); }
     }
 
     final class None implements Rofl {
