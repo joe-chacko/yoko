@@ -18,7 +18,6 @@
 package org.apache.yoko.io;
 
 import org.apache.yoko.util.Assert;
-import org.apache.yoko.util.Hex;
 import org.omg.CORBA.INTERNAL;
 import org.omg.CORBA.NO_MEMORY;
 
@@ -28,7 +27,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.apache.yoko.util.Exceptions.as;
 import static org.apache.yoko.util.Hex.formatHexPara;
-import static org.apache.yoko.util.Hex.hex;
+import static org.apache.yoko.util.HexConverter.toHex;
 import static org.apache.yoko.util.MinorCodes.MinorAllocationFailure;
 import static org.apache.yoko.util.MinorCodes.describeNoMemory;
 import static org.omg.CORBA.CompletionStatus.COMPLETED_MAYBE;
@@ -136,6 +135,14 @@ public abstract class Buffer<T extends Buffer<T>> implements Cloneable {
     public final int length() { return core.length; }
     final boolean growBy(int numBytes) { return core.growBy(numBytes); }
 
+    /**
+     * Aligns the position to the specified boundary.
+     */
+    public T align(AlignmentBoundary boundary) {
+        position = boundary.newIndex(position);
+        return (T)this;
+    }
+
     public final T clone() {
         try {
             return (T)super.clone();
@@ -167,7 +174,9 @@ public abstract class Buffer<T extends Buffer<T>> implements Cloneable {
 
     byte[] uncheckedBytes() { return core.data; }
 
-    public String toHex(int start, int end) { return hex(core.data, start, end, new StringBuilder()).toString(); }
+    public String asHex(int start, int end) { return toHex(core.data, start, end - start); }
+
+    public String asHex() { return toHex(core.data, core.length); }
 
     public ReadBuffer newReadBuffer() { return new ReadBuffer(core); } // resets position to 0
 

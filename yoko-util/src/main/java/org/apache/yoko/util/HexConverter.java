@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,35 +31,35 @@ public final class HexConverter {
         }
     }
 
-    private static char[] octetsToAsciiChars(byte[] oct, int count) {
-        assert count <= oct.length;
+    private static char[] toHexChars(byte[] oct, int offset, int count) {
+        assert offset + count <= oct.length;
 
         char[] result = new char[count * 2];
 
-        for (int i = 0, pos = 0; i < count; i++) {
-            result[pos++] = NYBBLE_TO_HEX_CHAR[oct[i] >> 4 & 0x0f];
-            result[pos++] = NYBBLE_TO_HEX_CHAR[oct[i] >> 0 & 0x0f];
+        for (int i = offset, j = 0; i < offset + count; i++) {
+            result[j++] = NYBBLE_TO_HEX_CHAR[oct[i] >> 4 & 0x0f];
+            result[j++] = NYBBLE_TO_HEX_CHAR[oct[i] >> 0 & 0x0f];
         }
 
         return result;
     }
 
-    public static String octetsToAscii(byte[] oct) {
-        if (oct == null) return null;
-        return new String(octetsToAsciiChars(oct, oct.length));
+    public static String toHex(byte[] oct) {
+        return oct == null ? null : String.valueOf(toHexChars(oct, 0, oct.length));
     }
 
-    public static String octetsToAscii(byte[] oct, int count) {
-        if (oct == null) return null;
-        return new String(octetsToAsciiChars(oct, count));
+    public static String toHex(byte[] oct, int count) {
+        return oct == null ? null : String.valueOf(toHexChars(oct, 0, count));
     }
 
-    public static byte[] asciiToOctets(String str, int offset) {
+    public static String toHex(byte[] oct, int offset, int count) {
+        return oct == null ? null : String.valueOf(toHexChars(oct, offset, count));
+    }
+
+    public static byte[] fromHex(String str, int offset) {
         int slen = str.length() - offset;
 
-        //
         // Two ASCII characters for each octet
-        //
         if ((slen & 1) != 0) return null;
 
         byte[] oct = new byte[slen/2];
@@ -85,7 +85,7 @@ public final class HexConverter {
         }
     }
 
-    public static byte[] asciiToOctets(String str) {
-        return asciiToOctets(str, 0);
+    public static byte[] fromHex(String str) {
+        return fromHex(str, 0);
     }
 }

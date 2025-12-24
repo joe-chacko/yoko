@@ -70,6 +70,8 @@ public final class WriteBuffer extends Buffer<WriteBuffer> {
         return this;
     }
 
+    public WriteBuffer write(int i) { return writeByte(i); }
+
     public WriteBuffer writeByte(int i) {
         checkedBytes(1)[position++] = (byte)i;
         return this;
@@ -184,6 +186,16 @@ public final class WriteBuffer extends Buffer<WriteBuffer> {
     public boolean ensureAvailable(int size) {
         final int shortfall = size - available();
         return shortfall > 0 && growBy(shortfall);
+    }
+
+    /**
+     * Aligns the position to the specified boundary.
+     * Writes padding bytes in the gap, if any.
+     */
+    @Override
+    public WriteBuffer align(AlignmentBoundary boundary) {
+        pad(boundary.gap(position));
+        return this;
     }
 
     public WriteBuffer padAll() { return pad(length()); }

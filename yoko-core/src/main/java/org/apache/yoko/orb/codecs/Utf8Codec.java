@@ -85,7 +85,7 @@ final class Utf8Codec implements CharCodec {
             return highSurrogate(codepoint);
         } catch (Exception e) {
             // something went wrong while reading a multi-byte encoding
-            DATA_IN_LOG.log(WARNING, e, () -> String.format("Bad input while reading multi-byte encoding beginning at position 0x%d: 0x%s", pos, in.toHex(pos, in.getPosition()).toUpperCase()));
+            DATA_IN_LOG.log(WARNING, e, () -> String.format("Bad input while reading multi-byte encoding beginning at position 0x%d: 0x%s", pos, in.asHex(pos, in.getPosition()).toUpperCase()));
             DATA_IN_LOG.fine(in::dumpAllDataWithPosition);
             // so return a replacement character and set the pointer just past this lead byte
             // whatever follows should be interpreted independently of this unsatisfied lead byte

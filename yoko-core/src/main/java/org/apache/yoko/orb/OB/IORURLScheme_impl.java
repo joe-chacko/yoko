@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
 package org.apache.yoko.orb.OB;
 
 import org.apache.yoko.orb.CORBA.InputStream;
-import org.apache.yoko.util.HexConverter;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.MARSHAL;
 import org.omg.IOP.IOR;
 import org.omg.IOP.IORHelper;
 
+import static org.apache.yoko.util.HexConverter.fromHex;
 import static org.apache.yoko.util.MinorCodes.MinorBadSchemeSpecificPart;
 import static org.apache.yoko.util.MinorCodes.describeBadParam;
 import static org.omg.CORBA.CompletionStatus.COMPLETED_NO;
@@ -46,7 +46,7 @@ public class IORURLScheme_impl extends LocalObject implements URLScheme {
         if ((len % 2) != 0)
             throw new BAD_PARAM(describeBadParam(MinorBadSchemeSpecificPart) + ": invalid length", MinorBadSchemeSpecificPart, COMPLETED_NO);
 
-        byte[] data = HexConverter.asciiToOctets(url, 4);
+        byte[] data = fromHex(url, 4);
 
         try {
             //

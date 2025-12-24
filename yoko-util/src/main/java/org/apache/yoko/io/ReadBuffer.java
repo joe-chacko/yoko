@@ -17,18 +17,17 @@
  */
 package org.apache.yoko.io;
 
-import org.apache.yoko.util.Hex;
-import org.apache.yoko.util.HexConverter;
-
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
-import static org.apache.yoko.util.Hex.formatHexLine;
 import static org.apache.yoko.util.Hex.formatHexPara;
+import static org.apache.yoko.util.HexConverter.toHex;
 
 public final class ReadBuffer extends Buffer<ReadBuffer> {
     ReadBuffer(Core core) { super(core); }
+    public int peek() { return position < length() ? 0xFF & peekByte() : -1; }
+    public int read() { return position < length() ? 0xFF & readByte() : -1; }
 
     public byte peekByte() { return checkedBytes(1)[position]; }
 
@@ -124,7 +123,7 @@ public final class ReadBuffer extends Buffer<ReadBuffer> {
     public double readDouble_LE() { return Double.longBitsToDouble(readLong_LE()); }
 
     public String toAscii() {
-        return HexConverter.octetsToAscii(checkedBytes(0), available());
+        return toHex(checkedBytes(0), available());
     }
 
     public String dumpRemainingData() {
@@ -167,11 +166,6 @@ public final class ReadBuffer extends Buffer<ReadBuffer> {
         return this;
     }
 
-    public ReadBuffer align(AlignmentBoundary boundary) {
-        position = boundary.newIndex(position);
-        return this;
-    }
-
     public ReadBuffer skipBytes(int n) {
         int newPos = position + n;
         if (newPos < 0) throw new IndexOutOfBoundsException(); // n can be negative!
@@ -180,6 +174,5 @@ public final class ReadBuffer extends Buffer<ReadBuffer> {
         return this;
     }
 
-    // TODO: should this (like the parent method) reset the position to 0?
     public ReadBuffer newReadBuffer() { return clone(); }
 }

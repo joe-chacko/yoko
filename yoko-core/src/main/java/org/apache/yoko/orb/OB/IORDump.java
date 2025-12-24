@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 IBM Corporation and others.
+ * Copyright 2025 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,21 @@
  */
 package org.apache.yoko.orb.OB;
 
-import static org.apache.yoko.util.Hex.formatHexPara;
+import org.apache.yoko.orb.CORBA.InputStream;
+import org.apache.yoko.orb.OCI.ConFactory;
+import org.apache.yoko.orb.OCI.ConFactoryRegistry;
+import org.apache.yoko.orb.OCI.ConFactoryRegistryHelper;
+import org.apache.yoko.util.Assert;
+import org.omg.CORBA.BAD_PARAM;
+import org.omg.CORBA.ORB;
+import org.omg.CORBA.ORBPackage.InvalidName;
+import org.omg.CORBA.UserException;
+import org.omg.IOP.IOR;
+import org.omg.IOP.IORHelper;
+import org.omg.IOP.TAG_MULTIPLE_COMPONENTS;
+import org.omg.IOP.TaggedComponent;
+import org.omg.IOP.TaggedComponentHelper;
+import org.omg.IOP.TaggedProfile;
 
 import java.io.IOError;
 import java.io.IOException;
@@ -32,22 +46,8 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import org.apache.yoko.orb.CORBA.InputStream;
-import org.apache.yoko.orb.OCI.ConFactory;
-import org.apache.yoko.orb.OCI.ConFactoryRegistry;
-import org.apache.yoko.orb.OCI.ConFactoryRegistryHelper;
-import org.apache.yoko.util.Assert;
-import org.apache.yoko.util.HexConverter;
-import org.omg.CORBA.BAD_PARAM;
-import org.omg.CORBA.ORB;
-import org.omg.CORBA.UserException;
-import org.omg.CORBA.ORBPackage.InvalidName;
-import org.omg.IOP.IOR;
-import org.omg.IOP.IORHelper;
-import org.omg.IOP.TAG_MULTIPLE_COMPONENTS;
-import org.omg.IOP.TaggedComponent;
-import org.omg.IOP.TaggedComponentHelper;
-import org.omg.IOP.TaggedProfile;
+import static org.apache.yoko.util.Hex.formatHexPara;
+import static org.apache.yoko.util.HexConverter.fromHex;
 
 public class IORDump {
 
@@ -119,7 +119,7 @@ public class IORDump {
 
     private static String describeIorString(ORB orb, String ref, boolean describeByteOrder) {
         if (!ref.startsWith("IOR:")) return "IOR is invalid\n";
-        byte[] data = HexConverter.asciiToOctets(ref, 4);
+        byte[] data = fromHex(ref, 4);
         InputStream in = new InputStream(data);
 
         StringBuilder sb = new StringBuilder();
