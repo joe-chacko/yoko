@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 IBM Corporation and others.
+ * Copyright 2026 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,10 +225,10 @@ public abstract class CodeSetNegotiationTest {
     }
 
     /**
-     * Test interaction with a 150-style IOR in this class to avoid connections caching codeset negotiation from other tests.
+     * Test interaction with a Yoko-1.5.0-style IOR in this class to avoid connections caching codeset negotiation from other tests.
      */
     @ConfigureServer
-    public static class Transmission150Test extends CodeSetNegotiationTest {
+    public static class Yoko_1_5_0_Test extends CodeSetNegotiationTest {
         @Test
         void testTransmitChars(ORB orb) throws RemoteException {
             stub150.apply(PAYLOAD_NC);
@@ -241,10 +241,10 @@ public abstract class CodeSetNegotiationTest {
     }
 
     /**
-     * Test interaction with a 152-style IOR in this class to avoid connections caching codeset negotiation from other tests.
+     * Test interaction with a Yoko-1.5.2-style IOR in this class to avoid connections caching codeset negotiation from other tests.
      */
     @ConfigureServer
-    public static class Transmission152Test extends CodeSetNegotiationTest {
+    public static class Yoko_1_5_2_Test extends CodeSetNegotiationTest {
         @Test
         void testTransmitChars(ORB orb) throws RemoteException {
             stub152.apply(PAYLOAD_NC);
@@ -256,8 +256,11 @@ public abstract class CodeSetNegotiationTest {
         }
     }
 
+    /**
+     * Test that the codeset tag component is created as expected
+     */
     @ConfigureServer
-    public static class CodesetCreationTest extends CodeSetNegotiationTest {
+    public static class CodesetTagComponentCreationTest extends CodeSetNegotiationTest {
         @Test
         void testCodesetsTagComponent() throws Exception {
             assertThat(currentCodeSetComponentInfo.ForCharData.native_code_set, is(UTF_8.id));
