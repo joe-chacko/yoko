@@ -218,6 +218,13 @@ public class UtfStringsTest {
         assertHex(utf16Hex);
     }
 
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("utf8TestStrings")
+    void readUtf16String(String description, String expectedText, String utf8Hex, String utf16Hex) {
+        writeHex(utf16Hex);
+        String actualText = in.read_wstring();
+        assertEquals(expectedText, actualText);
+    }
     private void writeHex(String hex) {
         byte[] bytes = HEX_STRING.parse(hex.replaceAll(" ", ""));
         out.write_octet_array(bytes, 0, bytes.length);
