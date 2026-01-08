@@ -24,7 +24,6 @@ import org.apache.yoko.orb.CORBA.OutputStream;
 import org.apache.yoko.orb.OB.CodeConverters;
 import org.apache.yoko.orb.OB.ORBInstance;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -36,10 +35,11 @@ import static org.apache.yoko.orb.OB.CodeSetInfo.UTF_16;
 import static org.apache.yoko.orb.OB.CodeSetInfo.UTF_8;
 import static org.apache.yoko.orb.OCI.GiopVersion.GIOP1_2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static testify.hex.HexBuilder.buildHex;
 import static testify.hex.HexParser.HEX_STRING;
 
-@TestInstance(Lifecycle.PER_METHOD)
+@TestInstance(PER_CLASS)
 class UtfStringsTest {
     static Stream<Arguments> unicodeTestStrings() {
         return Stream.of(
@@ -224,7 +224,7 @@ class UtfStringsTest {
         assertEquals(expectedText, actualText);
     }
 
-    InputStream writeHex(String hex) {
+    static InputStream writeHex(String hex) {
         byte[] bytes = HEX_STRING.parse(hex.replaceAll(" ", ""));
         try (var out = newUtfSpecificOutputStream()){
             out.write_octet_array(bytes, 0, bytes.length);
@@ -233,7 +233,7 @@ class UtfStringsTest {
         }
     }
 
-    void checkWrittenForm(Consumer<OutputStream> writeTextTo, String expectedHex) {
+    static void checkWrittenForm(Consumer<OutputStream> writeTextTo, String expectedHex) {
         // convert the hex to bytes
         byte[] expected = HEX_STRING.parse(expectedHex.replaceAll(" ", ""));
         // rewrite the hex in DUMP format
