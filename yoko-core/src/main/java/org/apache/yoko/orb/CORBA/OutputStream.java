@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 IBM Corporation and others.
+ * Copyright 2026 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,6 +115,7 @@ public final class OutputStream extends org.omg.CORBA_2_3.portable.OutputStream 
     private final boolean charConversionRequired_;
     private final boolean wCharWriterRequired_;
     private final boolean wCharConversionRequired_;
+    private final boolean charBoundsCheckRequired_;
 
     // Handles all OBV marshalling
     private ValueWriter valueWriter_;
@@ -647,8 +648,12 @@ public final class OutputStream extends org.omg.CORBA_2_3.portable.OutputStream 
         }
     }
 
-    private static char checkChar(char c) {
-        if (c > 0xff) throw new DATA_CONVERSION(String.format("illegal char value for string: 0x%04x", (int)c));
+    private char checkChar(char c) {
+        // Only validate for 8-bit charsets (not UTF-8, UTF-16, or UCS-2)
+        if (charBoundsCheckRequired_ && c > 0xff) {
+            throw new DATA_CONVERSION(
+                String.format("Character 0x%04x out of range for 8-bit charset", (int)c));
+        }
         return c;
     }
 
@@ -1513,6 +1518,16 @@ public final class OutputStream extends org.omg.CORBA_2_3.portable.OutputStream 
             Optional<CodeConverterBase> charConv = Optional.ofNullable(converters).map(c -> c.outputCharConverter);
             this.charWriterRequired_ = charConv.map(cc -> cc.writerRequired()).orElse(false);
             this.charConversionRequired_ = charConv.map(cc -> cc.conversionRequired()).orElse(false);
+            // Cache whether bounds checking is needed for char conversion
+            // UTF-8, UTF-16, and UCS-2 can handle full 16-bit range, others need validation
+            this.charBoundsCheckRequired_ = charConv
+                .map(cc -> {
+                    org.apache.yoko.orb.OB.CodeSetInfo destCodeSet = cc.getDestinationCodeSet();
+                    return destCodeSet != org.apache.yoko.orb.OB.CodeSetInfo.UTF_8
+                        && destCodeSet != org.apache.yoko.orb.OB.CodeSetInfo.UTF_16
+                        && destCodeSet != org.apache.yoko.orb.OB.CodeSetInfo.UCS_2;
+                })
+                .orElse(Boolean.FALSE);
         }
         {
             Optional<CodeConverterBase> wcharConv = Optional.ofNullable(converters).map(c -> c.outputWcharConverter);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 IBM Corporation and others.
+ * Copyright 2026 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,41 +29,34 @@ final class UTF8Reader extends CodeSetReader {
     public char read_char(ReadBuffer readBuffer) throws DATA_CONVERSION {
         byte first = readBuffer.readByte();
 
-        //
-        // Direct mapping for characters < 0x80
-        //
-        if ((first & 0x80) == 0)
+        // Direct mapping for characters <= 127
+        if ((first & 0b1000_0000) == 0)
             return (char) first;
 
         char value;
 
-        if ((first & 0xf8) == 0xc0) {
-            // 5 free bits
-            value = (char) (first & 0x1f);
-        } else if ((first & 0xf8) == 0xe0) {
-            // 4 free bits
-            value = (char) (first & 0x0f);
-
+        if ((first & 0b1110_0000) == 0b1100_0000) {
+            // 5 free bits, i.e. 110.....
+            value = (char) (first & 0b0001_1111);
+        } else if ((first & 0b1111_0000) == 0b1110_0000) {
+            // 4 free bits, i.e. 1110....
+            value = (char) (first & 0b0000_1111);
+            // read second byte
             if ((readBuffer.peekByte() & 0xc0) != 0x80) {
                 throw new DATA_CONVERSION(describeDataConversion(MinorUTF8Encoding), MinorUTF8Encoding, COMPLETED_NO);
             }
-
             value <<= 6;
-            value |= readBuffer.readByte() & 0x3f;
-        }
-        //
-        // 16 bit overflow
-        //
-        else {
+            value |= readBuffer.readByte() & 0b0011_1111;
+        } else {
+            // 16 bit overflow
             throw new DATA_CONVERSION(describeDataConversion(MinorUTF8Overflow), MinorUTF8Overflow, COMPLETED_NO);
         }
-
-        if ((readBuffer.peekByte() & 0xc0) != 0x80) {
+        if ((readBuffer.peekByte() & 0b1100_0000) != 0b1000_0000) {
             throw new DATA_CONVERSION(describeDataConversion(MinorUTF8Encoding), MinorUTF8Encoding, COMPLETED_NO);
         }
 
         value <<= 6;
-        value |= readBuffer.readByte() & 0x3f;
+        value |= readBuffer.readByte() & 0b0011_1111;
 
         return value;
     }
