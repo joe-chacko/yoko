@@ -198,28 +198,32 @@ public class UtfStringsTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("utf8TestStrings")
-    void testUtf8Marshalling(String description, String input, String utf8Hex, String utf16Hex) {
-        out.write_string(input);
+    void writeUtf8String(String description, String text, String utf8Hex, String utf16Hex) {
+        out.write_string(text);
         assertHex(utf8Hex);
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("utf8TestStrings")
-    void testUtf16Marshalling(String description, String input, String utf8Hex, String utf16Hex) {
-        out.write_wstring(input);
-        assertHex(utf16Hex);
+    void readUtf8String(String description, String expectedText, String utf8Hex, String utf16Hex) {
+        writeHex(utf8Hex);
+        String actualText = in.read_string();
+        assertEquals(expectedText, actualText);
     }
 
-    private void finishWriting() {
-        System.out.println(out.getBufferReader().dumpAllData());
-        in = out.create_input_stream();
-        out = null;
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("utf8TestStrings")
+    void writeUtf16Wstring(String description, String text, String utf8Hex, String utf16Hex) {
+        out.write_wstring(text);
+        assertHex(utf16Hex);
     }
 
     private void writeHex(String hex) {
         byte[] bytes = HEX_STRING.parse(hex.replaceAll(" ", ""));
         out.write_octet_array(bytes, 0, bytes.length);
-        finishWriting();
+        System.out.println(out.getBufferReader().dumpAllData());
+        in = out.create_input_stream();
+        out = null;
     }
 
     private void assertHex(String hex) {
