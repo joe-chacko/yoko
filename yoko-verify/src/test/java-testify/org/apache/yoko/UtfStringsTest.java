@@ -41,7 +41,7 @@ import static testify.hex.HexParser.HEX_STRING;
 
 @TestInstance(Lifecycle.PER_METHOD)
 class UtfStringsTest {
-    static Stream<Arguments> utf8TestStrings() {
+    static Stream<Arguments> unicodeTestStrings() {
         return Stream.of(
             // Basic ASCII
             Arguments.of(
@@ -199,26 +199,26 @@ class UtfStringsTest {
     }
 
     @ParameterizedTest(name = "{0}")
-    @MethodSource("utf8TestStrings")
+    @MethodSource("unicodeTestStrings")
     void writeUtf8String(String description, String text, String utf8Hex, String utf16Hex) {
         checkWrittenForm(o -> o.write_string(text), utf8Hex);
     }
 
     @ParameterizedTest(name = "{0}")
-    @MethodSource("utf8TestStrings")
+    @MethodSource("unicodeTestStrings")
     void readUtf8String(String description, String expectedText, String utf8Hex, String utf16Hex) {
         String actualText = writeHex(utf8Hex).read_string();
         assertEquals(expectedText, actualText);
     }
 
     @ParameterizedTest(name = "{0}")
-    @MethodSource("utf8TestStrings")
+    @MethodSource("unicodeTestStrings")
     void writeUtf16Wstring(String description, String text, String utf8Hex, String utf16Hex) {
         checkWrittenForm(o -> o.write_wstring(text), utf16Hex);
     }
 
     @ParameterizedTest(name = "{0}")
-    @MethodSource("utf8TestStrings")
+    @MethodSource("unicodeTestStrings")
     void readUtf16String(String description, String expectedText, String utf8Hex, String utf16Hex) {
         String actualText = writeHex(utf16Hex).read_wstring();
         assertEquals(expectedText, actualText);
