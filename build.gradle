@@ -133,6 +133,9 @@ subprojects { sp ->
   // ensure tests run under $buildDir somewhere
   test {
     // run tests in parallel
+    systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
+    systemProperty 'junit.jupiter.execution.parallel.mode.default', 'concurrent'
+    systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     // allow module accesses
     jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
