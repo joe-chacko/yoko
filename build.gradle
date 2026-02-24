@@ -132,6 +132,9 @@ subprojects { sp ->
 
   // ensure tests run under $buildDir somewhere
   test {
+    // run tests in parallel
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    // allow module accesses
     jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/java.util=ALL-UNNAMED'
