@@ -1,3 +1,22 @@
+## [v1.6.2] - 2026-07-22
+
+### 🐛 Bug Fixes
+
+- Align enum classHash calculation with FVD structure
+- Improve ClientRequestInterceptor handling
+  - Handle unexpected exceptions in client request interceptors
+  - Enforce COMPLETED_NO status for exceptions in send_request
+  - Implement CORBA spec completion status semantics for receive_exception
+  - Correct completion status for receive_reply exceptions
+  - Handle SystemException in receive_request_service_contexts
+- Add ValueMemberFieldDescriptor for FVD fields without local equivalents
+- Skip adding undefined serialPersistentFields to deserialization map
+- Return empty array instead of throwing exception in ArgumentStrategyNull
+
+### ⚡ Performance
+
+- Use MethodHandle for marshalling
+
 ## [v1.6.1] - 2026-04-15
 
 ### 🐛 Bug Fixes
