@@ -38,6 +38,14 @@ import java.util.function.Supplier;
 
 import static java.util.Collections.unmodifiableMap;
 
+/**
+ * OSGi BundleActivator for the yoko-rmi-impl module.
+ *
+ * @deprecated This activator is no longer registered as a {@code Bundle-Activator}.
+ *     The uber-bundle ({@code yoko-bundle}) is now the sole OSGi deployment unit.
+ *     This class is retained for binary backward compatibility only.
+ */
+@Deprecated
 public final class Activator extends AbstractBundleActivator {
     private static final Map<Class<?>, Supplier<?>> CONSTRUCTOR_MAP = unmodifiableMap(new HashMap<Class<?>, Supplier<?>>() {{
         put(_Remote_Stub.class, _Remote_Stub::new);

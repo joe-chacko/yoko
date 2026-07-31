@@ -22,6 +22,14 @@ import org.apache.yoko.orb.CORBA.ORBSingleton;
 import org.apache.yoko.osgi.locator.LocalFactory;
 import org.apache.yoko.osgi.locator.activator.AbstractBundleActivator;
 
+/**
+ * OSGi BundleActivator for the yoko-core module.
+ *
+ * @deprecated This activator is no longer registered as a {@code Bundle-Activator}.
+ *     The uber-bundle ({@code yoko-bundle}) is now the sole OSGi deployment unit.
+ *     This class is retained for binary backward compatibility only.
+ */
+@Deprecated
 public final class Activator extends AbstractBundleActivator {
     private enum MyLocalFactory implements LocalFactory {
         INSTANCE;
