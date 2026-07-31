@@ -33,12 +33,7 @@ logprops=${workspace}/test-osgi/yoko-logging.props
   junit-platform-engine,              \
   org.opentest4j,                     \
   org.hamcrest,                       \
-  org.apache.yoko.osgi,               \
-  org.apache.yoko.spec-corba,         \
-  org.apache.yoko.rmi-spec,           \
-  org.apache.yoko.rmi-impl,           \
-  org.apache.yoko.core,               \
-  org.apache.yoko.util,               \
+  org.apache.yoko,                    \
   org.apache.bcel,                    \
   org.apache.commons.lang3,           \
   testify,                            \

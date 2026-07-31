@@ -388,7 +388,8 @@ task createBuildLibSymlinks {
         ':yoko-rmi-impl',
         ':yoko-rmi-spec',
         ':yoko-util',
-        ':yoko-osgi'
+        ':yoko-osgi',
+        ':yoko-bundle'
     ]
 
     // Depend on jar tasks of all target projects

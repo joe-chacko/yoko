@@ -38,15 +38,14 @@ Export-Package: \
     org.apache.geronimo.interop;version=1.0, \
     org.apache.yoko;version=1.0, \
     org.apache.yoko.rmispec.*;version=1.0, \
-    org.apache.yoko.rmi.api;version=1.0, \
-    org.apache.yoko.rmi.impl;version=1.0, \
-    org.apache.yoko.rmi.util.*;version=1.0, \
+    org.apache.yoko.rmi.*;version=1.0, \
     org.apache.yoko.osgi.*;version=1.0.0, \
-    org.apache.yoko.orb.OB, \
-    org.apache.yoko.orb.OBPortableServer, \
-    org.apache.yoko.orb.OCI.IIOP, \
-    org.apache.yoko.orb.PortableInterceptor, \
-    org.apache.yoko.orb.spi.naming
+    org.apache.yoko.codecs, \
+    org.apache.yoko.giop, \
+    org.apache.yoko.io, \
+    org.apache.yoko.logging, \
+    org.apache.yoko.util.*, \
+    org.apache.yoko.orb.*
 
 # Optional sun.* imports that may not be present at runtime
 Import-Package: \
