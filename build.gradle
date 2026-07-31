@@ -134,7 +134,7 @@ task getVersion {
 
 // These are the production projects.
 // Note the ringer: jdk-supplement is an unshipped prereq to allow compiling for Java 8 and running with Java 11.
-def productionProjectPaths = [':jdk-supplement', ':yoko-osgi', ':yoko-spec-corba', ':yoko-rmi-spec', ':yoko-util', ':yoko-rmi-impl', ':yoko-core']
+def productionProjectPaths = [':jdk-supplement', ':yoko-osgi', ':yoko-spec-corba', ':yoko-rmi-spec', ':yoko-util', ':yoko-rmi-impl', ':yoko-core', ':yoko-bundle']
 
 /* Standard configuration for each subproject */
 subprojects { sp ->
@@ -313,6 +313,7 @@ configure([
   project(':yoko-rmi-spec'),
   project(':yoko-rmi-impl'),
   project(':yoko-core'),
+  project(':yoko-bundle'),
   project(':testify'),
 ]) {
   apply plugin: 'maven-publish'
