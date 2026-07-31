@@ -24,3 +24,30 @@ dependencies {
     implementation project(':yoko-rmi-impl')
     implementation project(':yoko-core')
 }
+
+// The uber-bundle embeds all subproject JARs, so they must NOT appear as
+// transitive Maven dependencies. Override the shared pom.withXml block that
+// the root build applies to all published projects.
+plugins.withId('maven-publish') {
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                pom.withXml {
+                    // Remove any dependency nodes written by the shared configure block
+                    def root = asNode()
+                    def depsNode = root.dependencies
+                    if (depsNode) root.remove(depsNode[0])
+
+                    // Declare only the OSGi API as a provided/runtime dependency
+                    // so consumers of the bundle know the OSGi framework is required
+                    def deps = root.appendNode('dependencies')
+                    def dep = deps.appendNode('dependency')
+                    dep.appendNode('groupId', 'org.osgi')
+                    dep.appendNode('artifactId', 'org.osgi.core')
+                    dep.appendNode('version', '6.0.0')
+                    dep.appendNode('scope', 'provided')
+                }
+            }
+        }
+    }
+}
