@@ -16,7 +16,7 @@
 
 -include ~../config/bnd/common.bnd
 
-Bundle-Description: Apache Yoko OSGi Uber-Bundle
+Bundle-Description: OpenLiberty Yoko bundle
 
 # Explicit symbolic name — overrides the common.bnd derived name
 Bundle-SymbolicName: org.apache.yoko

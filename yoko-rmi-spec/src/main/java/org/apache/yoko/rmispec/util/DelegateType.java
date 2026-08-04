@@ -34,6 +34,7 @@ public enum DelegateType {
     UTIL("javax.rmi.CORBA.UtilClass","org.apache.yoko.rmi.impl.UtilImpl"),
     STUB("javax.rmi.CORBA.StubClass", "org.apache.yoko.rmi.impl.StubImpl"),
     PRO("javax.rmi.CORBA.PortableRemoteObjectClass", "org.apache.yoko.rmi.impl.PortableRemoteObjectImpl"),
+    PRO_EXT("org.apache.yoko.rmi.PortableRemoteObjectExtClass", "org.apache.yoko.rmi.impl.PortableRemoteObjectExtImpl"),
     STUB_INIT("org.apache.yoko.rmi.RMIStubInitializerClass", "org.apache.yoko.rmi.impl.RMIStubInitializer");
 
     private static final Set<Object> delegateClassLoaders = synchronizedSet(new HashSet<>());
