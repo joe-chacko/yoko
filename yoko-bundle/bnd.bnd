@@ -32,20 +32,36 @@ Bundle-SymbolicName: org.apache.yoko
 
 # API packages (CORBA/OMG/RMI specs)
 Export-Package: \
-    org.omg.*;version=2.4, \
-    javax.rmi.*;version=2.4, \
-    org.omg.stub.java.rmi;version=2.4, \
-    org.apache.geronimo.interop;version=1.0, \
-    org.apache.yoko;version=1.0, \
-    org.apache.yoko.rmispec.*;version=1.0, \
-    org.apache.yoko.rmi.*;version=1.0, \
-    org.apache.yoko.osgi.*;version=1.0.0, \
-    org.apache.yoko.codecs, \
-    org.apache.yoko.giop, \
-    org.apache.yoko.io, \
-    org.apache.yoko.logging, \
-    org.apache.yoko.util.*, \
-    org.apache.yoko.orb.*
+    javax.rmi;version=2.4, \
+    javax.rmi.CORBA;version=2.4, \
+    org.apache.yoko.orb.OB;version=1.6.1, \
+    org.apache.yoko.orb.OBPortableServer;version=1.6.1, \
+    org.apache.yoko.orb.OCI;version=1.6.1, \
+    org.apache.yoko.orb.OCI.IIOP;version=1.6.1, \
+    org.apache.yoko.orb.PortableInterceptor;version=1.6.1, \
+    org.apache.yoko.orb.spi.naming;version=1.6.1, \
+    org.apache.yoko.osgi.locator;version=1.0.0, \
+    org.apache.yoko.rmi.impl;version=1.0, \
+    org.omg.CORBA_2_3;version=2.4, \
+    org.omg.CORBA_2_3.portable;version=2.4, \
+    org.omg.CORBA.portable;version=2.4, \
+    org.omg.CosNaming;version=2.4, \
+    org.omg.CosNaming.NamingContextPackage;version=2.4, \
+    org.omg.CosTransactions;version=2.4, \
+    org.omg.CSI;version=2.4, \
+    org.omg.CSIIOP;version=2.4, \
+    org.omg.GSSUP;version=2.4, \
+    org.omg.IIOP;version=2.4, \
+    org.omg.IOP;version=2.4, \
+    org.omg.IOP.CodecFactoryPackage;version=2.4, \
+    org.omg.IOP.CodecPackage;version=2.4, \
+    org.omg.PortableInterceptor;version=2.4, \
+    org.omg.PortableServer;version=2.4, \
+    org.omg.PortableServer.POAManagerPackage;version=2.4, \
+    org.omg.PortableServer.POAPackage;version=2.4, \
+    org.omg.PortableServer.ServantLocatorPackage;version=2.4, \
+    org.omg.Security;version=2.4, \
+    org.omg.SendingContext;version=2.4
 
 # Optional sun.* imports that may not be present at runtime
 Import-Package: \
