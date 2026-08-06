@@ -20,10 +20,16 @@
 
 # enable logging for yoko
 logprops=${workspace}/test-osgi/yoko-logging.props
--runvm: -Djava.util.logging.config.file=${logprops}
+-runvm: -Djava.util.logging.config.file=${logprops}, \
+  --add-opens=java.base/java.lang=ALL-UNNAMED, \
+  --add-opens=java.base/java.io=ALL-UNNAMED, \
+  --add-opens=java.base/java.util=ALL-UNNAMED
 
 # We don't have any resolution happening here so
 # we must list all the bundles we need explicitly.
+# Launch the concrete Yoko bundles that actually provide the imported
+# packages used by the OSGi tests.
+#
 -runbundles: \
   junit-platform-launcher,            \
   junit-jupiter-api,                  \
@@ -33,9 +39,7 @@ logprops=${workspace}/test-osgi/yoko-logging.props
   junit-platform-engine,              \
   org.opentest4j,                     \
   org.hamcrest,                       \
-  org.apache.yoko.osgi,               \
   org.apache.yoko.spec-corba,         \
-  org.apache.yoko.rmi-spec,           \
   org.apache.yoko.rmi-impl,           \
   org.apache.yoko.core,               \
   org.apache.yoko.util,               \
