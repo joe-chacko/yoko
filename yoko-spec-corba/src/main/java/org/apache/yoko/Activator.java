@@ -24,7 +24,7 @@ import org.apache.yoko.osgi.locator.activator.AbstractBundleActivator;
  * OSGi BundleActivator for the yoko-spec-corba module.
  *
  * @deprecated This activator is no longer registered as a Bundle-Activator.
- *     The uber-bundle (yoko-bundle) is now the sole OSGi deployment unit.
+ *     All Yoko packages are now deployed together in yoko-core as a single OSGi bundle.
  *     This class is retained for binary backward compatibility only.
  */
 @Deprecated

@@ -26,7 +26,7 @@ import org.apache.yoko.osgi.locator.activator.AbstractBundleActivator;
  * OSGi BundleActivator for the yoko-core module.
  *
  * @deprecated This activator is no longer registered as a Bundle-Activator.
- *     The single-bundle (yoko-bundle) is now the sole OSGi deployment unit.
+ *     The single-bundle (yoko-core) is now the sole OSGi deployment unit.
  *     This class is retained for binary backward compatibility only.
  */
 @Deprecated

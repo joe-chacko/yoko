@@ -39,10 +39,10 @@ import java.util.function.Supplier;
 import static java.util.Collections.unmodifiableMap;
 
 /**
- * OSGi BundleActivator for the yoko-core module.
+ * OSGi BundleActivator for the yoko-rmi-impl module.
  *
  * @deprecated This activator is no longer registered as a Bundle-Activator.
- *     The single-bundle (yoko-bundle) is now the sole OSGi deployment unit.
+ *     All Yoko packages are now deployed together in yoko-core as a single OSGi bundle.
  *     This class is retained for binary backward compatibility only.
  */
 @Deprecated

@@ -39,7 +39,6 @@ logprops=${workspace}/test-osgi/yoko-logging.props
   org.apache.yoko.rmi-impl,           \
   org.apache.yoko.core,               \
   org.apache.yoko.util,               \
-  org.apache.yoko                     \
   org.apache.bcel,                    \
   org.apache.commons.lang3,           \
   testify,                            \
