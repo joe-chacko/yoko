@@ -16,15 +16,8 @@
 
 -include ~../config/bnd/common.bnd
 
-Bundle-Description: Apache Yoko RMI Implementation
-Bundle-Activator: org.apache.yoko.rmi.osgi.activator.Activator
-Export-Package: \
-  org.apache.yoko.rmi.api;version=1.0, \
-  org.apache.yoko.rmi.impl;version=1.0, \
-  org.apache.yoko.rmi.util;version=1.0, \
-  org.apache.yoko.rmi.util.corba;version=1.0, \
-  org.apache.yoko.rmi.util.stub;version=1.0
-Import-Package: \
-  sun.misc;resolution:=optional, \
-  sun.reflect;resolution:=optional, \
-  *
+Bundle-Description: Apache Yoko RMI Implementation (Empty - functionality moved to yoko-core)
+
+# Empty bundle - all functionality has been moved to yoko-core
+# This artifact is kept for backwards compatibility but contains no code
+Export-Package:

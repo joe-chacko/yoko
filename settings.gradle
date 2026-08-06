@@ -24,7 +24,6 @@ include ':yoko-rmi-spec'
 include ':yoko-util'
 include ':yoko-rmi-impl'
 include ':yoko-core'
-include ':yoko-bundle'
 
 include ':test-osgi'
 include ':yoko-verify'

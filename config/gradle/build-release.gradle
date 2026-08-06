@@ -34,8 +34,7 @@ def releaseProjects = [
     ':yoko-spec-corba',
     ':yoko-rmi-spec',
     ':yoko-rmi-impl',
-    ':yoko-core',
-    ':yoko-bundle'
+    ':yoko-core'
 ]
 
 // Task to verify release prerequisites
