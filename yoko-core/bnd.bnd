@@ -35,17 +35,16 @@ Bundle-Activator: org.apache.yoko.orb.activator.Activator
 
 # API packages (CORBA/OMG/RMI specs)
 Export-Package: \
-    javax.rmi;version=2.4, \
-    javax.rmi.CORBA;version=2.4, \
+    javax.*;version=2.4, \
     org.apache.yoko.io;version=1.6.1, \
-    org.apache.yoko.orb.*, \
-    org.apache.yoko.osgi, \
-    org.apache.yoko.osgi.*, \
-    org.apache.yoko.logging;version=1.6.1, \
-    org.apache.yoko.rmi.impl;version=1.0, \
-    org.apache.yoko.rmispec.util;version=1.0, \
-    org.apache.yoko.util, \
-    org.apache.yoko.util.*, \
+    org.apache.yoko.orb.OB;version=1.6.1, \
+    org.apache.yoko.orb.OBPortableServer;version=1.6.1, \
+    org.apache.yoko.orb.OCI;version=1.6.1, \
+    org.apache.yoko.orb.OCI.IIOP;version=1.6.1, \
+    org.apache.yoko.orb.PortableInterceptor;version=1.6.1, \
+    org.apache.yoko.orb.spi.naming;version=1.6.1, \
+    org.apache.yoko.osgi.locator;version=1.6.1, \
+    org.apache.yoko.util;version=1.6.1, \
     org.omg.*;version=2.4
 
 # Optional sun.* imports that may not be present at runtime
