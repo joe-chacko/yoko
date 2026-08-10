@@ -21,17 +21,9 @@ Bundle-Activator: org.apache.yoko.orb.activator.Activator
 
 # Include all packages from dependencies
 -conditionalpackage: \
-    org.apache.yoko.osgi.*, \
+    org.apache.yoko.*, \
     org.omg.*, \
-    javax.rmi.*, \
-    org.apache.yoko.rmispec.*, \
-    org.apache.yoko.io.*, \
-    org.apache.yoko.logging.*, \
-    org.apache.yoko.util.*, \
-    org.apache.yoko.rmi.api.*, \
-    org.apache.yoko.rmi.impl.*, \
-    org.apache.yoko.rmi.util.*, \
-    org.apache.yoko.rmi.osgi.*
+    javax.rmi.*
 
 # API packages (CORBA/OMG/RMI specs)
 Export-Package: \
