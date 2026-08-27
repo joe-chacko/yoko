@@ -224,7 +224,10 @@ public abstract class ORB {
             }
         };
         final Supplier<Optional<ORB>> newOrbFromProvider = () -> ProviderLocator.getService(propertyKey, ORB.class, contextClassLoader, DOPRIV_GET_CONSTRUCTOR);
-        final Supplier<ORB> newOrbFromSysProps = () -> newOrbFromName.apply(doPriv(() -> System.getProperty(propertyKey, "org.apache.yoko.orb.CORBA.ORB")));
+        final String defaultClassName = ORBSingletonPropertyKey.equals(propertyKey) 
+            ? "org.apache.yoko.orb.CORBA.ORBSingleton" 
+            : "org.apache.yoko.orb.CORBA.ORB";
+        final Supplier<ORB> newOrbFromSysProps = () -> newOrbFromName.apply(doPriv(() -> System.getProperty(propertyKey, defaultClassName)));
 
         return Optional.ofNullable(orbClassName)
                 .map(newOrbFromName)

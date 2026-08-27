@@ -16,9 +16,4 @@
 
 -include ~../config/bnd/common.bnd
 
-Bundle-Description: Apache Yoko RMI Spec
-Bundle-Activator: org.apache.yoko.rmispec.util.Activator
-Export-Package: \
-  org.omg.stub.java.rmi;version=2.4, \
-  javax.rmi.*;version=2.4, \
-  org.apache.yoko.rmispec.*;version=1.0
+Bundle-Description: Apache Yoko RMI Spec (Empty bundle provided for backwards compatibility only)

@@ -16,9 +16,4 @@
 
 -include ~../config/bnd/common.bnd
 
-Bundle-Description: Apache Yoko CORBA Spec
-Bundle-Activator: org.apache.yoko.Activator
-Export-Package: \
-  org.omg.*;version=2.4, \
-  org.apache.geronimo.interop;version=1.0, \
-  org.apache.yoko;version=1.0
+Bundle-Description: Apache Yoko CORBA Spec (Empty bundle provided for backwards compatibility only)

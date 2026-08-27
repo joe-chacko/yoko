@@ -16,8 +16,4 @@
 
 -include ~../config/bnd/common.bnd
 
-Bundle-Description: Apache Yoko Implementation Utilities
-Export-Package: \
-  org.apache.yoko.io, \
-  org.apache.yoko.logging, \
-  org.apache.yoko.util.*
+Bundle-Description: Apache Yoko Implementation Utilities (Empty bundle provided for backwards compatibility only)

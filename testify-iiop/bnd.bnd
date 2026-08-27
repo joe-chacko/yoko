@@ -18,5 +18,9 @@
 
 Bundle-Description: Yoko Testify Framework IIOP Extensions for JUnit 5
 Export-Package: testify.iiop.*
+Import-Package: \
+    org.apache.yoko.io;testOnly=true, \
+    org.apache.yoko.util;testOnly=true, \
+    *
 DynamicImport-Package: *
 Sealed: true
