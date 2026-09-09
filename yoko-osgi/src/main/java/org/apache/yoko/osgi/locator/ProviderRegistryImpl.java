@@ -17,7 +17,6 @@
  */
 package org.apache.yoko.osgi.locator;
 
-import org.apache.yoko.osgi.ProviderLocator;
 import org.apache.yoko.osgi.ProviderRegistry;
 
 import java.security.PrivilegedAction;
@@ -53,14 +52,6 @@ public class ProviderRegistryImpl implements ProviderRegistry, Register {
 
     /** Store the known classloaders weakly to eliminate them from enquiries when stack-walking */
     private final Set<ClassLoader> knownLoaders = synchronizedSet(newSetFromMap(new WeakHashMap<>()));
-
-    public void start() {
-        ProviderLocator.setRegistry(this);
-    }
-
-    public void stop() {
-        ProviderLocator.setRegistry(null);
-    }
 
     /**
      * Register an individual provider item by its provider identifier.

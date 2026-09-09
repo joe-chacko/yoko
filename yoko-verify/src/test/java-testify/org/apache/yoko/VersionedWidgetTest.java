@@ -24,6 +24,7 @@ import org.apache.yoko.io.WriteBuffer;
 import org.apache.yoko.orb.CORBA.YokoInputStream;
 import org.apache.yoko.orb.CORBA.YokoOutputStream;
 import org.apache.yoko.orb.OB.SendingContextRuntimes;
+import org.apache.yoko.osgi.ProviderLocator;
 import org.apache.yoko.osgi.locator.ProviderRegistryImpl;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -99,11 +100,11 @@ class WidgetProviderLoaderTest extends WidgetMarshallingTest {
         in.__setSendingContextRuntime(SendingContextRuntimes.LOCAL_CODE_BASE);
         ProviderRegistryImpl reg = new ProviderRegistryImpl();
         reg.registerPackages(context.newInstance("versioned.VersionedPackageProvider"));
-        reg.start();
+        ProviderLocator.setRegistry(reg);
         try {
             return (Widget) in.read_value();
         } finally {
-            reg.stop();
+            ProviderLocator.setRegistry(null);
         }
     }
 }
@@ -131,7 +132,7 @@ class WidgetDeepStackLoaderTest extends WidgetMarshallingTest {
         // Register the V0 package provider with the provider registry so it can be ignored in the call stack.
         ProviderRegistryImpl reg = new ProviderRegistryImpl();
         reg.registerPackages(Loader.V0.newInstance("versioned.VersionedPackageProvider"));
-        reg.start();
+        ProviderLocator.setRegistry(reg);
         // To insert an extra layer into the call stack, use the WidgetReader from the WRONG loader, V0.
         // NOTE: if we do not load something via the registry, it will never know about the class loader
         Class<? extends Function<YokoInputStream, Widget>> widgetReaderClass = reg.locate("versioned.WidgetReader");
@@ -141,7 +142,7 @@ class WidgetDeepStackLoaderTest extends WidgetMarshallingTest {
         try {
             return widgetReader.apply(in);
         } finally {
-            reg.stop();
+            ProviderLocator.setRegistry(null);
         }
     }
 
@@ -150,5 +151,3 @@ class WidgetDeepStackLoaderTest extends WidgetMarshallingTest {
         return chainer.apply(fun);
     }
 }
-
-// Made with Bob
