@@ -31,14 +31,14 @@ Export-Package: \
     org.apache.yoko.osgi;version=1.0.0, \
     org.apache.yoko.osgi.locator;version=1.0.0, \
     org.apache.yoko.io;mandatory:=testOnly;testOnly=true, \
-    org.apache.yoko.orb.OB, \
-    org.apache.yoko.orb.OBPortableServer, \
-    org.apache.yoko.orb.OCI, \
-    org.apache.yoko.orb.OCI.IIOP, \
-    org.apache.yoko.orb.PortableInterceptor, \
-    org.apache.yoko.orb.spi.naming, \
+    org.apache.yoko.orb.OB;version=1.6.0, \
+    org.apache.yoko.orb.OBPortableServer;version=1.6.0, \
+    org.apache.yoko.orb.OCI;version=1.6.0, \
+    org.apache.yoko.orb.OCI.IIOP;version=1.6.0, \
+    org.apache.yoko.orb.PortableInterceptor;version=1.6.0, \
+    org.apache.yoko.orb.spi.naming;version=1.6.0, \
     org.apache.yoko.osgi.locator, \
-    org.apache.yoko.rmi.impl, \
+    org.apache.yoko.rmi.impl;version=1.0.0, \
     org.apache.yoko.util;mandatory:=testOnly;testOnly=true, \
     org.omg.*;version=2.4
 # Optional sun.* imports that may not be present at runtime
