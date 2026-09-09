@@ -16,14 +16,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 dependencies {
-  // depend on the Yoko spec jars
+  // depend on the Yoko spec classes
   implementation project(':yoko-osgi')
+  implementation files(project(':yoko-osgi').sourceSets.main.output)
   implementation project(':yoko-spec-corba')
+  implementation files(project(':yoko-spec-corba').sourceSets.main.output)
   implementation project(':yoko-rmi-spec')
+  implementation files(project(':yoko-rmi-spec').sourceSets.main.output)
 
   // and the rest of the Yoko implementation
   implementation project(":yoko-util")
+  implementation files(project(":yoko-util").sourceSets.main.output)
   implementation project(":yoko-rmi-impl")
+  implementation files(project(":yoko-rmi-impl").sourceSets.main.output)
 }
 
 // The core-bundle embeds all subproject JARs, so they must NOT appear as

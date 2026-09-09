@@ -28,6 +28,8 @@ Bundle-Description: Apache Yoko Core
 # no -conditionalpackage is needed for org.omg.* or javax.*.
 Export-Package: \
     javax.*;version=2.4, \
+    org.apache.yoko.osgi;version=1.0.0, \
+    org.apache.yoko.osgi.locator;version=1.0.0, \
     org.apache.yoko.io;mandatory:=testOnly;testOnly=true, \
     org.apache.yoko.orb.OB, \
     org.apache.yoko.orb.OBPortableServer, \

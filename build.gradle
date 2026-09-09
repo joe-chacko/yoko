@@ -110,6 +110,7 @@ import static java.time.format.DateTimeFormatter.BASIC_ISO_DATE
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
 def gitHash = 'git rev-parse HEAD'.execute().text.trim()
+def gitDirty = !'git status --porcelain'.execute().text.trim().isEmpty()
 // compute git commit date
 def gitIsoDate = 'git log -1 --date=iso-strict --pretty=format:%cd'.execute().text.trim()
 // convert from author's time zone to UTC
@@ -202,7 +203,9 @@ try {
     logger.warn("Failed to read git tags (${e.message}), using: ${baseVersion}")
 }
 
-def yokoVersion = "${baseVersion}.${gitBasicDateUtc.take(8)}_${gitHash.take(10)}"
+def yokoVersion = (baseVersion == 'dev')
+    ? "0.0.0.dev_${gitBasicDateUtc.take(8)}_${gitHash.take(10)}${gitDirty ? '_dirty' : ''}"
+    : "${baseVersion}.${gitBasicDateUtc.take(8)}_${gitHash.take(10)}${gitDirty ? '_dirty' : ''}"
 
 // set system properties for use in bundle metadata
 System.setProperty("git.hash", gitHash);

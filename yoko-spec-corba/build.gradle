@@ -18,10 +18,15 @@
 
 dependencies {
   api project(":yoko-osgi")
+  api files(project(":yoko-osgi").sourceSets.main.output)
 }
 
 sourceSets.main.java {
   srcDirs 'src/main/generated-sources/idl'
+}
+
+jar {
+  exclude '**/*.class'
 }
 
 javadoc {
