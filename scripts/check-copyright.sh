@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2025 IBM Corporation and others.
+# Copyright 2026 IBM Corporation and others.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@
   }
 
   # ensure this script is run from the root of the local git repo
-  [ -f .git/HEAD ] || die "This script must be run from the root of the local git repository."
+  [ -z "$(git rev-parse --show-cdup 2>&1)" ] || die "This script must be run from the root of the local git repository."
   SCRIPT_NAME="$(basename "$0" .sh)"
   RC_FILE="./.$SCRIPT_NAME.rc"
 
