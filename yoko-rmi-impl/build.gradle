@@ -20,10 +20,18 @@ dependencies {
   // provided 'org.osgi:org.osgi.core:5.0.0'
   implementation 'org.apache.bcel:bcel:6.6.0'
   implementation project(":yoko-osgi")
+  implementation files(project(":yoko-osgi").sourceSets.main.output)
   implementation project(":yoko-util")
+  implementation files(project(":yoko-util").sourceSets.main.output)
   implementation project(":yoko-spec-corba")
+  implementation files(project(":yoko-spec-corba").sourceSets.main.output)
   implementation project(":yoko-rmi-spec")
+  implementation files(project(":yoko-rmi-spec").sourceSets.main.output)
   compileOnly project(":jdk-supplement")
+}
+
+jar {
+  exclude '**/*.class'
 }
 
 javadoc {
