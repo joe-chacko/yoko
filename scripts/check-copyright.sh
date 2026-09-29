@@ -46,8 +46,8 @@
     exit 1
   }
 
-  # ensure this script is run from the root of the local git repo
-  [ -z "$(git rev-parse --show-cdup 2>&1)" ] || die "This script must be run from the root of the local git repository."
+  # ensure this script is run from the root of the local git repo or worktree
+  [ -z "$(git rev-parse --show-cdup 2>&1)" ] || die "This script must be run from the root of the local git repository or worktree."
   SCRIPT_NAME="$(basename "$0" .sh)"
   RC_FILE="./.$SCRIPT_NAME.rc"
 
