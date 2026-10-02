@@ -18,13 +18,13 @@
 
 /**
  * Release configuration for Yoko project
- * 
- * This file provides Gradle tasks for creating GitHub releases with binaries.
+ *
  * Usage:
- *   ./gradlew assembleRelease    - Build all release artifacts
- *   ./gradlew generateReleaseNotes - Generate release notes from CHANGELOG
- *   ./gradlew createGitHubRelease  - Create GitHub release (requires GH_TOKEN)
- *   ./gradlew release              - Complete release process
+ *   ./gradlew release-1-begin              - Pick version, create release branch
+ *   ./gradlew release-2-describe - Run git-cliff, commit CHANGELOG
+ *   ./gradlew release-3-check             - Validate, build, test
+ *   ./gradlew release-4-seal             - Sign tag, merge to main, delete branch
+ *   ./gradlew release-5-deliver            - Build artifacts, create GitHub release, merge to dev
  */
 
 // Define release artifacts
@@ -99,9 +99,24 @@ def getAllVersionTagsFromGit() {
 
 
 
+// Helper function to extract the release version from the current branch name.
+// Expects a branch named release/X.Y.Z; throws a GradleException otherwise.
+def getVersionFromBranch() {
+    def branch = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
+    def matcher = branch =~ /^release\/(\d+\.\d+\.\d+)$/
+    if (!matcher.matches()) {
+        throw new GradleException(
+            "Not on a release branch. Expected a branch named 'release/X.Y.Z', but found: '${branch}'.\n" +
+            "Run './gradlew release-1-begin' to create a release branch first."
+        )
+    }
+    return matcher.group(1)
+}
+
+
 // Task to verify release prerequisites
 task verifyReleasePrerequisites {
-    group = 'release'
+    group = null
     description = 'Verifies all prerequisites for creating a release'
 
     doLast {
@@ -213,7 +228,7 @@ task verifyReleasePrerequisites {
 
 // Task to assemble all release artifacts
 task assembleRelease {
-    group = 'release'
+    group = null
     description = 'Assembles all release artifacts (JARs)'
     
     dependsOn verifyReleasePrerequisites
@@ -255,7 +270,7 @@ task assembleRelease {
 
 // Task to update CHANGELOG using git-cliff
 task updateChangelog {
-    group = 'release'
+    group = null
     description = 'Updates CHANGELOG.md using git-cliff'
     
     def changelogFile = file('CHANGELOG.md')
@@ -289,7 +304,7 @@ task updateChangelog {
 
 // Task to bump version non-interactively (for CI/CD)
 task bumpVersionNonInteractive {
-    group = 'release'
+    group = null
     description = 'Bump version non-interactively. Usage: -PversionBump=major|minor|patch'
     
     doLast {
@@ -378,7 +393,6 @@ Conflicting versions: ${conflicting.sort().take(5).join(', ')}
 You must either:
   1. Merge/rebase with the branch containing these versions
   2. Delete conflicting tags if they were created in error
-  3. Use manual version override: -PbaseVersion=X.Y.Z
 """)
             }
 
@@ -435,7 +449,6 @@ Conflicting versions: ${conflicting.sort().take(5).join(', ')}
 You must either:
   1. Merge/rebase with the branch containing these versions
   2. Delete conflicting tags if they were created in error
-  3. Use manual version override: -PbaseVersion=X.Y.Z
 """)
             }
 
@@ -452,7 +465,6 @@ This exact version already exists in the repository.
 You must either:
   1. Merge/rebase with the branch containing ${newVersion}
   2. Delete the conflicting tag if it was created in error
-  3. Use manual version override: -PbaseVersion=X.Y.Z
 """)
             }
 
@@ -537,10 +549,10 @@ Note: The version is now managed via git tags, not gradle.properties
     }
 }
 
-// Task to interactively bump the semantic version
-task bumpVersion {
+// Step 1: pick version bump, create release/X.Y.Z from origin/dev, switch to it
+task 'release-1-begin' {
     group = 'release'
-    description = 'Interactively bump the semantic version (major, minor, or patch)'
+    description = 'Step 1: pick a version bump and create the release/X.Y.Z branch from dev'
     
     doLast {
         // Get current version from git tags (only in ancestry)
@@ -738,36 +750,40 @@ Enter choice [${validOptions.join('/')}${validOptions.isEmpty() ? '' : '/'}C]: "
         
         def bumpType = selectedOption[0]
         def newVersion = selectedOption[1]
+        def releaseBranch = "release/${newVersion}"
 
-        // Double-check the new version doesn't exist (shouldn't happen with our filtering)
-        def versionWarnings = []
-        if (allVersions.contains(newVersion)) {
-            versionWarnings.add("⚠️  WARNING: Version ${newVersion} already exists in the repository!")
-            versionWarnings.add("   This should not happen. Please report this as a bug.")
+        // Check git working directory is clean before branching
+        def gitStatus = 'git status --porcelain'.execute().text.trim()
+        if (gitStatus) {
+            throw new GradleException("Git working directory is not clean. Commit or stash changes before creating a release branch.")
         }
 
-        def output = """
-✅ Version bumped successfully!
+        // Create release branch from dev
+        println "\nCreating release branch '${releaseBranch}' from dev..."
+        exec {
+            commandLine 'git', 'checkout', '-b', releaseBranch, 'origin/dev'
+        }
 
-Old version: ${currentVersion} (from ancestry)
+        // Push release branch to origin
+        println "Pushing release branch to origin..."
+        exec {
+            commandLine 'git', 'push', '-u', 'origin', releaseBranch
+        }
+
+        println """
+╔════════════════════════════════════════════════════════════════╗
+║               Release Branch Created Successfully              ║
+╚════════════════════════════════════════════════════════════════╝
+
+Branch:      ${releaseBranch}
 New version: ${newVersion}
-"""
+Base:        origin/dev
 
-        if (!versionWarnings.isEmpty()) {
-            output += "\n" + versionWarnings.join('\n') + "\n"
-        }
-
-        output += """
 Next steps:
-  1. Create git tag: git tag v${newVersion}
-  2. Push tag: git push origin v${newVersion}
-  3. Update CHANGELOG: ./gradlew updateChangelog
-  4. Build with new version: ./gradlew build
+  1. Update CHANGELOG: ./gradlew release-2-describe
+  2. Review CHANGELOG.md, then: ./gradlew release-3-check
 
-Note: The version is now managed via git tags, not gradle.properties
 """
-
-        println output
     }
 }
 
@@ -991,42 +1007,31 @@ task validateRelease {
     }
 }
 
-// Task to create release branch and prepare release
-task prepareReleaseBranch {
+// Step 2 (describe): run git-cliff, commit CHANGELOG.md to the release branch
+task 'release-2-describe' {
     group = 'release'
-    description = 'Creates a release branch, updates CHANGELOG, and pushes to origin'
-    
+    description = 'Step 2: run git-cliff and commit CHANGELOG.md to the release branch'
+
     doLast {
-        def versionTag = "v${version}"
-        def releaseBranch = "release/${version}"
-        
+        def releaseVersion = getVersionFromBranch()
+        def versionTag = "v${releaseVersion}"
+        def releaseBranch = "release/${releaseVersion}"
+
         println "Preparing release branch: ${releaseBranch}"
         println "Version tag: ${versionTag}"
-        
+
         // Check for clean git state
         def gitStatus = 'git status --porcelain'.execute().text.trim()
         if (gitStatus) {
             throw new GradleException("Git working directory is not clean. Commit or stash changes first.")
         }
-        
-        // Create release branch
-        println "Creating release branch..."
-        exec {
-            commandLine 'git', 'checkout', '-b', releaseBranch
-        }
-        
-        // Push release branch to origin
-        println "Pushing release branch to origin..."
-        exec {
-            commandLine 'git', 'push', '-u', 'origin', releaseBranch
-        }
-        
+
         // Update CHANGELOG using git-cliff, preserving existing entries
         println "Updating CHANGELOG.md..."
         exec {
             commandLine 'git-cliff', '--config', 'config/git-cliff/cliff.toml', '--tag', versionTag, '--unreleased', '--prepend', 'CHANGELOG.md'
         }
-        
+
         // Commit CHANGELOG if changed
         def changelogDiff = 'git diff CHANGELOG.md'.execute().text.trim()
         if (changelogDiff) {
@@ -1035,7 +1040,7 @@ task prepareReleaseBranch {
                 commandLine 'git', 'add', 'CHANGELOG.md'
             }
             exec {
-                commandLine 'git', 'commit', '-m', "chore: update CHANGELOG for ${version}"
+                commandLine 'git', 'commit', '-m', "chore: update CHANGELOG for ${releaseVersion}"
             }
             exec {
                 commandLine 'git', 'push', 'origin', releaseBranch
@@ -1043,7 +1048,7 @@ task prepareReleaseBranch {
         } else {
             println "CHANGELOG.md unchanged"
         }
-        
+
         println """
 ╔════════════════════════════════════════════════════════════════╗
 ║              Release Branch Prepared Successfully              ║
@@ -1054,100 +1059,186 @@ Version: ${releaseVersion}
 Tag: ${versionTag}
 
 Next steps:
-  1. Review the CHANGELOG.md changes
-  2. Run: ./gradlew finalizeRelease -PreleaseVersion=${releaseVersion}
-  3. Or manually:
-     - Create annotated tag: git tag -a ${versionTag} -m "Release ${version}"
-     - Push tag: git push origin ${versionTag}
-     - Merge to main: git checkout main && git merge --ff-only ${releaseBranch}
-     - Push main: git push origin main
-     - Delete branch: git push origin --delete ${releaseBranch}
+  1. Review and edit CHANGELOG.md
+  2. Run: ./gradlew release-3-check
 
 """
     }
 }
 
-// Task to finalize release (tag, merge, cleanup)
-task finalizeRelease {
+// Step 3 (check): validate, build, test — gate before sealing
+task 'release-3-check' {
     group = 'release'
-    description = 'Creates annotated tag, merges release branch to main, and cleans up'
-    
+    description = 'Step 3: validate release readiness, build binaries, run tests'
+
     doLast {
-        // Get version from parameter        
-        def releaseVersion = "${version}"
+        def releaseVersion = getVersionFromBranch()
         def versionTag = "v${releaseVersion}"
         def releaseBranch = "release/${releaseVersion}"
-        
-        println "Finalizing release: ${releaseVersion}"
-        
-        // Verify we're on the release branch
-        def currentBranch = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
-        if (currentBranch != releaseBranch) {
-            throw new GradleException("Must be on ${releaseBranch} branch. Current branch: ${currentBranch}")
+        def errors = []
+
+        println """
+╔════════════════════════════════════════════════════════════════╗
+║                    Release Verification                        ║
+╚════════════════════════════════════════════════════════════════╝
+"""
+
+        // 1. CHANGELOG check
+        print "Checking CHANGELOG.md contains ${versionTag}... "
+        def changelogFile = file('CHANGELOG.md')
+        if (!changelogFile.exists()) {
+            errors.add("CHANGELOG.md not found")
+            println "❌"
+        } else {
+            def changelog = changelogFile.text
+            if (!changelog.contains("## [${versionTag}]") && !changelog.contains("## [${releaseVersion}]")) {
+                errors.add("Version ${versionTag} not found in CHANGELOG.md — run release-2-describe first")
+                println "❌"
+            } else {
+                println "✅"
+            }
         }
-        
-        // Create annotated tag
-        println "Creating annotated tag: ${versionTag}"
+
+        // 2. Clean working directory
+        print "Checking git working directory is clean... "
+        def gitStatus = 'git status --porcelain'.execute().text.trim()
+        if (gitStatus) {
+            errors.add("Git working directory is not clean — commit or stash changes first")
+            println "❌"
+        } else {
+            println "✅"
+        }
+
+        // 3. Branch sync
+        print "Checking branch is in sync with origin... "
+        try {
+            exec {
+                commandLine 'git', 'fetch', 'origin', releaseBranch
+                standardOutput = new ByteArrayOutputStream()
+                errorOutput = new ByteArrayOutputStream()
+            }
+            def localCommit  = 'git rev-parse HEAD'.execute().text.trim()
+            def remoteCommit = "git rev-parse origin/${releaseBranch}".execute().text.trim()
+            if (localCommit == remoteCommit) {
+                println "✅"
+            } else {
+                errors.add("Local branch is not in sync with origin/${releaseBranch} — push your changes first")
+                println "❌"
+            }
+        } catch (Exception e) {
+            errors.add("Could not check branch sync: ${e.message}")
+            println "❌"
+        }
+
+        // 4. No existing tag
+        print "Checking tag ${versionTag} does not already exist... "
+        def tagCheck = "git rev-parse --verify ${versionTag}".execute()
+        tagCheck.waitFor()
+        if (tagCheck.exitValue() == 0) {
+            errors.add("Tag ${versionTag} already exists — delete it first if this is a retry")
+            println "❌"
+        } else {
+            println "✅"
+        }
+
+        if (errors) {
+            println "\n❌ Validation failed:"
+            errors.each { println "  - ${it}" }
+            println "\nFix the issues above, commit, and re-run: ./gradlew release-3-check\n"
+            throw new GradleException("Release verification failed.")
+        }
+
+        println "\n✅ Validation passed — building and testing...\n"
+
+        // 5. Build
         exec {
-            commandLine 'git', 'tag', '-a', versionTag, '-m', "Release ${releaseVersion}"
+            commandLine './gradlew', 'build'
         }
-        
+
+        println """
+╔════════════════════════════════════════════════════════════════╗
+║                  ✅ Verification Passed                        ║
+╚════════════════════════════════════════════════════════════════╝
+
+Version: ${releaseVersion}
+Branch:  ${releaseBranch}
+
+Next step: ./gradlew release-4-seal
+
+"""
+    }
+}
+
+// Step 4 (seal): sign tag, ff-merge to main, delete branch
+task 'release-4-seal' {
+    group = 'release'
+    description = 'Step 4: create signed tag, ff-merge to main, push, delete release branch'
+
+    doLast {
+        def releaseVersion = getVersionFromBranch()
+        def versionTag = "v${releaseVersion}"
+        def releaseBranch = "release/${releaseVersion}"
+
+        println "Committing release: ${releaseVersion}"
+
+        // Create annotated signed tag
+        println "Creating annotated signed tag: ${versionTag}"
+        exec {
+            commandLine 'git', 'tag', '-s', versionTag, '-m', "Release ${releaseVersion}: see CHANGELOG.md for details"
+        }
+
         // Push tag
         println "Pushing tag to origin..."
         exec {
             commandLine 'git', 'push', 'origin', versionTag
         }
-        
+
         // Checkout main
         println "Checking out main branch..."
         exec {
             commandLine 'git', 'checkout', 'main'
         }
-        
+
         // Pull latest main
         println "Pulling latest main..."
         exec {
             commandLine 'git', 'pull', 'origin', 'main'
         }
-        
+
         // Fast-forward merge release branch
         println "Merging ${releaseBranch} to main (fast-forward only)..."
         exec {
             commandLine 'git', 'merge', '--ff-only', releaseBranch
         }
-        
+
         // Push main
         println "Pushing main to origin..."
         exec {
             commandLine 'git', 'push', 'origin', 'main'
         }
-        
+
         // Delete remote release branch
         println "Deleting remote release branch..."
         exec {
             commandLine 'git', 'push', 'origin', '--delete', releaseBranch
         }
-        
+
         // Delete local release branch
         println "Deleting local release branch..."
         exec {
             commandLine 'git', 'branch', '-d', releaseBranch
         }
-        
+
         println """
 ╔════════════════════════════════════════════════════════════════╗
-║                  Release Finalized Successfully                ║
+║                  ✅ Release Committed                          ║
 ╚════════════════════════════════════════════════════════════════╝
 
 Version: ${releaseVersion}
-Tag: ${versionTag}
-Branch: ${releaseBranch} (deleted)
+Tag:     ${versionTag}
+Branch:  ${releaseBranch} (deleted)
 
-The release branch has been merged to main and cleaned up.
-
-Next steps:
-  1. Verify the release at: https://github.com/OpenLiberty/yoko/releases/tag/${versionTag}
-  2. Or create the GitHub release manually using: ./gradlew createGitHubRelease
+Next step: ./gradlew release-5-deliver
 
 """
     }
@@ -1251,10 +1342,10 @@ task createDistribution(type: Zip) {
     }
 }
 
-// Task to create GitHub release using GitHub CLI
-task createGitHubRelease {
+// Step 5 (deliver): build artifacts, publish GitHub release, ff-merge to dev
+task 'release-5-deliver' {
     group = 'release'
-    description = 'Creates a GitHub release with artifacts (requires gh CLI and GH_TOKEN)'
+    description = 'Step 5: build artifacts, create GitHub release, ff-merge main to dev'
     
     dependsOn createDistribution
     
@@ -1276,23 +1367,19 @@ task createGitHubRelease {
         def distTask = tasks.getByName('createDistribution')
         def distFile = distTask.archiveFile.get().asFile
         
-        // Extract version from CHANGELOG
-        def changelog = file('CHANGELOG.md').text
-        def versionMatcher = changelog =~ /## \[v?(\d+\.\d+\.\d+[^\]]*)\]/
-        if (!versionMatcher.find()) {
-            throw new GradleException("No version found in CHANGELOG.md")
+        // Derive the release version from the annotated tag on HEAD (set by release-4-seal)
+        def tagOnHead = 'git describe --exact-match --tags HEAD'.execute()
+        tagOnHead.waitFor()
+        if (tagOnHead.exitValue() != 0) {
+            throw new GradleException(
+                "No tag found on HEAD. Run './gradlew release-4-seal' first to tag the release commit."
+            )
         }
-        def releaseVersion = "v${versionMatcher.group(1)}"
-        
-        // Check if tag already exists
-        try {
-            def checkTag = "git rev-parse --verify ${releaseVersion}".execute()
-            checkTag.waitFor()
-            if (checkTag.exitValue() == 0) {
-                throw new GradleException("Git tag ${releaseVersion} already exists. Roll it back manually to re-release or bump the version using 'gradle bumpVersion'")
-            }
-        } catch (IOException e) {
-            // Tag doesn't exist, which is good
+        def releaseVersion = tagOnHead.text.trim()
+        if (!(releaseVersion =~ /^v\d+\.\d+\.\d+$/)) {
+            throw new GradleException(
+                "Tag on HEAD ('${releaseVersion}') is not a release tag (expected vX.Y.Z)."
+            )
         }
 
         // Check if GitHub release already exists
@@ -1342,19 +1429,42 @@ task createGitHubRelease {
         
         println "✅ GitHub release created successfully: ${releaseVersion}"
         println "View at: https://github.com/OpenLiberty/yoko/releases/tag/${releaseVersion}"
+
+        // ff-merge main back to dev
+        println "\nMerging main back to dev..."
+        exec {
+            commandLine 'git', 'checkout', 'dev'
+        }
+        exec {
+            commandLine 'git', 'merge', '--ff-only', 'main'
+        }
+        exec {
+            commandLine 'git', 'push', 'origin', 'dev'
+        }
+
+        println """
+╔════════════════════════════════════════════════════════════════╗
+║                    🎉 Release Complete! 🎉                     ║
+╚════════════════════════════════════════════════════════════════╝
+
+Version: ${releaseVersion}
+GitHub:  https://github.com/OpenLiberty/yoko/releases/tag/${releaseVersion}
+dev:     merged and up to date
+
+"""
     }
 }
 
-// Main release task
+// Main release task (hidden — use the numbered tasks instead)
 task release {
-    group = 'release'
+    group = null
     description = 'Complete release process: validate, build, and create GitHub release'
 
     dependsOn 'validateRelease'
-    dependsOn 'createGitHubRelease'
-    
-    // Ensure validateRelease runs before createGitHubRelease
-    tasks.createGitHubRelease.mustRunAfter tasks.validateRelease
+    dependsOn 'release-5-deliver'
+
+    // Ensure validateRelease runs before release-5-deliver
+    tasks['release-5-deliver'].mustRunAfter tasks.validateRelease
 
     doFirst {
         println """
