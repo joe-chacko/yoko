@@ -17,7 +17,11 @@
  */
 package org.apache.yoko.osgi.locator;
 
+import org.apache.yoko.osgi.ProviderLocator;
 import org.apache.yoko.osgi.ProviderRegistry;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 
 import java.security.PrivilegedAction;
 import java.util.HashMap;
@@ -38,7 +42,19 @@ import static java.util.Collections.synchronizedSet;
  * The implementation of the provider registry used to store
  * the bundle registrations.
  */
+@Component(immediate = false, service = {Register.class, ProviderRegistry.class})
 public class ProviderRegistryImpl implements ProviderRegistry, Register {
+
+    @Activate
+    protected void activate() {
+        ProviderLocator.setRegistry(this);
+    }
+
+    @Deactivate
+    protected void deactivate() {
+        ProviderLocator.setRegistry(null);
+    }
+
 
     private static final Logger log = Logger.getLogger(ProviderRegistryImpl.class.getName());
     // our mapping between a provider id and the implementation information.  There
