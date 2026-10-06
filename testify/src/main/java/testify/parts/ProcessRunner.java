@@ -75,6 +75,7 @@ public class ProcessRunner implements Runner<Process>{
 
     @Override
     public boolean join(Process p, long timeout, TimeUnit unit) throws InterruptedException {
+        p.toHandle().descendants().forEach(ProcessHandle::destroy);
         p.destroy();
         return !p.isAlive() || p.waitFor(timeout, unit);
     }
