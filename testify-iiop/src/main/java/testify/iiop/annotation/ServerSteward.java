@@ -251,6 +251,14 @@ class ServerSteward {
     private String[] buildJvmArgs() {
         List<String> args = new ArrayList<>(Arrays.asList(config.jvmArgs()));
 
+        // Always forward the same --add-opens that the test worker receives, so the
+        // forked server subprocess can perform the same reflective access on Java 9+.
+        args.add("--add-opens"); args.add("java.base/java.lang=ALL-UNNAMED");
+        args.add("--add-opens"); args.add("java.base/java.lang.invoke=ALL-UNNAMED");
+        args.add("--add-opens"); args.add("java.base/java.io=ALL-UNNAMED");
+        args.add("--add-opens"); args.add("java.base/java.util=ALL-UNNAMED");
+        args.add("--add-opens"); args.add("java.rmi/java.rmi=ALL-UNNAMED");
+
         // If a specific Yoko version is requested, prepend cached JARs to classpath
         if (null != yokoVersion) {
             // Build classpath: old Yoko JARs + old dependencies + test classes only
@@ -265,17 +273,13 @@ class ServerSteward {
                     || path.contains("/testify-iiop/build/"))
                 .collect(joining(File.pathSeparator));
 
-            // Add classpath and module access to JVM args
+            // Add classpath for versioned interop test
             String fullClasspath = versionClasspath + File.pathSeparator + filteredClasspath;
             System.out.println("=== Server Classpath for " + yokoVersion.version + " ===");
             System.out.println(fullClasspath.replace(File.pathSeparator, "\n"));
             System.out.println("=== End Server Classpath ===");
             args.add("-cp");
             args.add(fullClasspath);
-            args.add("--add-opens");
-            args.add("java.base/java.lang=ALL-UNNAMED");
-            args.add("--add-opens");
-            args.add("java.base/java.util=ALL-UNNAMED");
         }
         return args.toArray(NO_STRINGS);
     }

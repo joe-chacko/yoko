@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 IBM Corporation and others.
+ * Copyright 2026 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,13 @@ public class Util {
         // Add the classpath to argument list
         binArgs.add("-classpath");
         binArgs.add(System.getProperty("java.class.path"));
+
+        // Required on Java 9+ for Yoko's reflective access to JDK internals
+        binArgs.add("--add-opens=java.base/java.lang=ALL-UNNAMED");
+        binArgs.add("--add-opens=java.base/java.lang.invoke=ALL-UNNAMED");
+        binArgs.add("--add-opens=java.base/java.io=ALL-UNNAMED");
+        binArgs.add("--add-opens=java.base/java.util=ALL-UNNAMED");
+        binArgs.add("--add-opens=java.rmi/java.rmi=ALL-UNNAMED");
 
         // Add properties to argument list
         Enumeration<Object> en = props.keys();

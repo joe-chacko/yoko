@@ -212,8 +212,8 @@ subprojects { sp ->
   // standardise the test deps here
   dependencies {
     testLib 'junit:junit:4.12'
-    testLib 'org.mockito:mockito-core:2.22.0'
-    testLib 'org.mockito:mockito-junit-jupiter:2.22.0'
+    testLib 'org.mockito:mockito-core:5.18.0'
+    testLib 'org.mockito:mockito-junit-jupiter:5.18.0'
     testLib "org.hamcrest:hamcrest:2.1"
     testLib "org.junit.jupiter:junit-jupiter:5.9.0"
     testLib "org.junit.platform:junit-platform-runner:1.8.2"
@@ -229,6 +229,7 @@ subprojects { sp ->
   // ensure tests run under $buildDir somewhere
   test {
     jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
+    jvmArgs '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/java.util=ALL-UNNAMED'
     jvmArgs '--add-opens=java.rmi/java.rmi=ALL-UNNAMED'
