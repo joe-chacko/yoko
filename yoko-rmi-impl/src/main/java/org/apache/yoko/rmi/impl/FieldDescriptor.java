@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.rmi.Remote;
 import java.security.PrivilegedActionException;
 import java.util.HashMap;
@@ -122,17 +123,25 @@ abstract class FieldDescriptor extends ModelElement implements Comparable<FieldD
         } else {
             int modifiers = f.getModifiers();
             this.valueMemberAccess = isPublic(modifiers) ? ValueMemberAccess.PUBLIC : ValueMemberAccess.PRIVATE;
-            MethodHandles.Lookup lookup = MethodHandles.lookup();
             try {
                 Field fieldCopy = doPrivileged(makeAccessible(doPrivileged(getDeclaredField(
                     f.getDeclaringClass(),
                     f.getName()
                 ))));
+                MethodHandles.Lookup lookup = MethodHandles.lookup();
                 this.getter = lookup.unreflectGetter(fieldCopy);
-                this.setter = lookup.unreflectSetter(fieldCopy);
+                if (Modifier.isFinal(modifiers)) {
+                    // MethodHandles.lookup().unreflectSetter() refuses final fields on Java 12+
+                    // even after setAccessible(true). Use Field.set() instead, which respects
+                    // the setAccessible flag and works for final fields in the unnamed module.
+                    this.setter = lookup.unreflect(Field.class.getMethod("set", Object.class, Object.class))
+                            .bindTo(fieldCopy);
+                } else {
+                    this.setter = lookup.unreflectSetter(fieldCopy);
+                }
             } catch (PrivilegedActionException pae) {
                 throw new RuntimeException(pae.getCause());
-            } catch (IllegalAccessException e) {
+            } catch (IllegalAccessException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
         }
