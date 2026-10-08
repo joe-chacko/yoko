@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import testify.annotation.ExpectLog;
+import testify.annotation.failure.ExpectFailureExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +48,8 @@ import static org.junit.platform.commons.support.AnnotationSupport.findRepeatabl
 public final class LogExpectationExtension implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
     private static final Namespace NS = Namespace.create(LogExpectationExtension.class);
-    private static final String KEY = "capturingHandler";
+    private static final String HANDLER_KEY = "capturingHandler";
+    private static final String LEVEL_KEY = "savedLevels";
 
     @Override
     public void beforeTestExecution(ExtensionContext ctx) {
@@ -55,6 +57,7 @@ public final class LogExpectationExtension implements BeforeTestExecutionCallbac
         if (annotations.isEmpty()) return;
 
         CapturingHandler handler = new CapturingHandler();
+        java.util.Map<String, Level> savedLevels = new java.util.LinkedHashMap<>();
 
         // Attach to every distinct logger named by the annotations.
         // The root logger ("") receives records from all loggers, so attaching
@@ -65,28 +68,38 @@ public final class LogExpectationExtension implements BeforeTestExecutionCallbac
                 .forEach(name -> {
                     Logger logger = Logger.getLogger(name);
                     logger.addHandler(handler);
-                    // Ensure the logger itself isn't filtering the records out
+                    // Ensure the logger itself isn't filtering the records out; save original level for restore
                     if (logger.getLevel() == null || logger.getLevel().intValue() > Level.ALL.intValue()) {
+                        savedLevels.put(name, logger.getLevel());
                         logger.setLevel(Level.ALL);
                     }
                 });
 
-        ctx.getStore(NS).put(KEY, handler);
+        ctx.getStore(NS).put(HANDLER_KEY, handler);
+        ctx.getStore(NS).put(LEVEL_KEY, savedLevels);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void afterTestExecution(ExtensionContext ctx) {
-        CapturingHandler handler = ctx.getStore(NS).remove(KEY, CapturingHandler.class);
+        CapturingHandler handler = ctx.getStore(NS).remove(HANDLER_KEY, CapturingHandler.class);
         if (handler == null) return;
 
         List<ExpectLog> annotations = findRepeatableAnnotations(ctx.getRequiredTestMethod(), ExpectLog.class);
 
-        // Detach before asserting so that assertion failures don't add spurious records
+        // Detach and restore log levels before asserting so that assertion failures don't add spurious records
+        java.util.Map<String, Level> savedLevels = (java.util.Map<String, Level>)
+                ctx.getStore(NS).remove(LEVEL_KEY, java.util.Map.class);
         annotations.stream()
                 .map(ExpectLog::logger)
                 .distinct()
-                .map(Logger::getLogger)
-                .forEach(logger -> logger.removeHandler(handler));
+                .forEach(name -> {
+                    Logger logger = Logger.getLogger(name);
+                    logger.removeHandler(handler);
+                    if (savedLevels != null && savedLevels.containsKey(name)) {
+                        logger.setLevel(savedLevels.get(name));
+                    }
+                });
 
         List<LogRecord> records = handler.records;
 
@@ -105,9 +118,18 @@ public final class LogExpectationExtension implements BeforeTestExecutionCallbac
                 String description = expectedLevel == ExpectLog.LogLevel.ANY
                         ? "matching /" + expectation.value() + "/"
                         : "at level " + expectedLevel + " matching /" + expectation.value() + "/";
-                throw new AssertionError("Expected a log record " + description
+                AssertionError failure = new AssertionError("Expected a log record " + description
                         + " but none was found among " + records.size() + " captured record(s)."
                         + (records.isEmpty() ? "" : " Messages were:\n" + formatRecords(records)));
+
+                // If @ExpectFailure is in play, deposit the error into the shared store
+                // so ExpectFailureExtension can consume and validate it rather than letting
+                // it surface as an unhandled test failure.
+                if (ExpectFailureExtension.isSuppressing(ctx)) {
+                    ExpectFailureExtension.depositFailure(ctx, failure);
+                    return; // stop checking further expectations — one failure is enough
+                }
+                throw failure;
             }
         }
     }
