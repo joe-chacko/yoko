@@ -26,9 +26,7 @@ Leave a **blank line** between the shebang and the copyright block.
 ### 📄 License header
 
 Every script carries the full Apache 2.0 licence block followed by the SPDX
-identifier.  The `"AS IS"` double-quotes must be **escaped** (`\"`) so that the
-comment is valid in every POSIX shell context (including when the file is read by
-tools that interpret quotes inside comments):
+identifier:
 
 ```sh
 #!/bin/sh
@@ -42,7 +40,7 @@ tools that interpret quotes inside comments):
 #   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an \"AS IS\" BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -159,7 +157,7 @@ further two spaces per level.  Do not use tabs.
 #   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an \"AS IS\" BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
