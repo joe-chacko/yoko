@@ -28,22 +28,48 @@
     exit 1
   }
 
-  # Unlocks the dev branch (Option 1).
+  # Unlocks the dev branch.
   # Direct pushes blocked — all changes must go through a PR with 1 approving review.
+  # Reads the existing protection state and only flips lock_branch and enforce_admins,
+  # preserving all other settings (status checks, PR reviews, restrictions, etc.).
 
-  gh api repos/OpenLiberty/yoko/branches/dev/protection \
+  command -v jq > /dev/null 2>&1 || die "jq is required but not found."
+
+  # Fetch current protection and transform it into a valid PUT body:
+  #   - set lock_branch = false
+  #   - set enforce_admins = false
+  #   - unwrap nested .required_status_checks and .required_pull_request_reviews objects
+  #     into the flat form the PUT endpoint expects
+  BODY="$(gh api repos/OpenLiberty/yoko/branches/dev/protection | jq '{
+    required_status_checks: (
+      if .required_status_checks then {
+        strict: .required_status_checks.strict,
+        contexts: .required_status_checks.contexts
+      } else null end
+    ),
+    enforce_admins: false,
+    required_pull_request_reviews: (
+      if .required_pull_request_reviews then {
+        dismissal_restrictions:           .required_pull_request_reviews.dismissal_restrictions,
+        dismiss_stale_reviews:            .required_pull_request_reviews.dismiss_stale_reviews,
+        require_code_owner_reviews:       .required_pull_request_reviews.require_code_owner_reviews,
+        required_approving_review_count:  .required_pull_request_reviews.required_approving_review_count,
+        require_last_push_approval:       .required_pull_request_reviews.require_last_push_approval
+      } else null end
+    ),
+    restrictions: (
+      if .restrictions then {
+        users: (.restrictions.users | map(.login)),
+        teams: (.restrictions.teams | map(.slug)),
+        apps:  (.restrictions.apps  | map(.slug))
+      } else null end
+    ),
+    lock_branch: false
+  }')"
+
+  echo "$BODY" | gh api repos/OpenLiberty/yoko/branches/dev/protection \
     --method PUT \
-    --input - <<'EOF'
-{
-  "required_status_checks": null,
-  "enforce_admins": false,
-  "required_pull_request_reviews": {
-    "required_approving_review_count": 1
-  },
-  "restrictions": null,
-  "lock_branch": false
-}
-EOF
+    --input -
 
-  echo "dev branch unlocked. PRs required with 1 approving review."
+  echo "🔓 dev branch unlocked. PRs required with 1 approving review."
 )
