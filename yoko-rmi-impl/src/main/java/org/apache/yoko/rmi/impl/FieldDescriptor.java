@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.rmi.Remote;
 import java.security.PrivilegedActionException;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import java.util.logging.Logger;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.security.AccessController.doPrivileged;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static org.apache.yoko.util.Exceptions.as;
 import static org.apache.yoko.util.PrivilegedActions.exAction;
@@ -122,24 +124,39 @@ abstract class FieldDescriptor extends ModelElement implements Comparable<FieldD
         } else {
             int modifiers = f.getModifiers();
             this.valueMemberAccess = isPublic(modifiers) ? ValueMemberAccess.PUBLIC : ValueMemberAccess.PRIVATE;
-            MethodHandles.Lookup lookup = MethodHandles.lookup();
             try {
                 Field fieldCopy = doPrivileged(makeAccessible(doPrivileged(getDeclaredField(
                     f.getDeclaringClass(),
                     f.getName()
                 ))));
+                MethodHandles.Lookup lookup = MethodHandles.lookup();
                 this.getter = lookup.unreflectGetter(fieldCopy);
-                this.setter = lookup.unreflectSetter(fieldCopy);
+                if (Modifier.isFinal(modifiers)) {
+                    // MethodHandles.lookup().unreflectSetter() refuses final fields on Java 12+
+                    // even after setAccessible(true). Use Field.set() instead, which respects
+                    // the setAccessible flag and works for final fields in the unnamed module.
+                    this.setter = lookup.unreflect(Field.class.getMethod("set", Object.class, Object.class))
+                            .bindTo(fieldCopy);
+                } else {
+                    this.setter = lookup.unreflectSetter(fieldCopy);
+                }
             } catch (PrivilegedActionException pae) {
                 throw new RuntimeException(pae.getCause());
-            } catch (IllegalAccessException e) {
+            } catch (IllegalAccessException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
     void setFieldContents(Object o, Object value) throws IOException {
-        if (null == setter) throw new IOException("No local field '" + java_name + "' in class " + declaringClass.getName());
+        if (null == setter) {
+            // This field appears in serialPersistentFields but has no backing instance field
+            // (e.g. ConcurrentHashMap's legacy segmentMask/segmentShift). Discard the value,
+            // mirroring the read-and-discard behaviour of java.io.ObjectInputStream.
+            logger.log(FINE, () -> "Discarding value for virtual serial-persistent field '"
+                    + java_name + "' in class " + declaringClass.getName());
+            return;
+        }
         try {
             setter.invoke(o, value);
         } catch (Throwable t) {
@@ -148,12 +165,21 @@ abstract class FieldDescriptor extends ModelElement implements Comparable<FieldD
     }
 
     Object getFieldContents(Object o) throws IOException {
-        if (null == getter) throw new IOException("No local field '" + java_name + "' in class " + declaringClass.getName());
+        if (null == getter) {
+            // This field appears in serialPersistentFields but has no backing instance field.
+            // Return the type's default value so the stream still receives the correct number
+            // of bytes, mirroring what java.io.ObjectOutputStream does for absent fields.
+            return defaultValue();
+        }
         try {
             return getter.invoke(o);
         } catch (Throwable t) {
             throw as(IOException::new, t, t.getMessage());
         }
+    }
+
+    Object defaultValue() {
+        return null;
     }
 
     @Override

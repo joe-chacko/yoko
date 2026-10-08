@@ -15,9 +15,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+package testify.parts;
 
-dependencies {
-  implementation "org.hamcrest:hamcrest:2.1"
-  implementation "org.junit.jupiter:junit-jupiter:5.9.0"
-  testImplementation "org.junit.platform:junit-platform-testkit:1.9.0"
+import java.util.concurrent.locks.LockSupport;
+
+/**
+ * A trivial main class used as a grandchild process in orphan-detection tests.
+ * Parks the current thread indefinitely — it must be killed externally.
+ */
+public class SleepForever {
+    public static void main(String[] args) {
+        LockSupport.park();
+    }
 }

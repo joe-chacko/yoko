@@ -49,6 +49,8 @@ public class ProcessRunner implements Runner<Process>{
      */
     public static void main(String[] args) {
         childProcess = true;
+        // If the parent JVM dies for any reason (including SIGKILL), exit this child process too.
+        ProcessHandle.current().parent().ifPresent(parent -> parent.onExit().thenRun(() -> System.exit(1)));
         String name = args[0];
         Bus bus = InterProcessBus.createChild().forUser(name);
         bus.log("Started remote process for test part: " + name);
@@ -73,12 +75,14 @@ public class ProcessRunner implements Runner<Process>{
 
     @Override
     public boolean join(Process p, long timeout, TimeUnit unit) throws InterruptedException {
+        p.toHandle().descendants().forEach(ProcessHandle::destroy);
         p.destroy();
         return !p.isAlive() || p.waitFor(timeout, unit);
     }
 
     @Override
     public boolean stop(Process p, long timeout, TimeUnit unit) throws InterruptedException{
+        p.toHandle().descendants().forEach(ProcessHandle::destroyForcibly);
         p.destroy();
         p.waitFor(timeout, unit);
         p.destroyForcibly().waitFor(timeout, unit);
