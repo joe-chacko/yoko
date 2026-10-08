@@ -1,4 +1,5 @@
 #!/bin/sh
+
 # Copyright 2026 IBM Corporation and others.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,45 +16,54 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-set -e
+# Enforce top-level subshell to avoid leaking environment changes (in case script is sourced)
+(
+  # Stop on first unexpected error
+  set -e
+  # Disable globbing
+  set -f
 
-die() { echo "Error: $*" >&2; exit 1; }
+  die() {
+    echo "$@" >&2
+    exit 1
+  }
 
-echo "Cleaning up Bob Shell worktree..."
+  echo "Cleaning up Bob Shell worktree..."
 
-# Ensure we're in a git repository and change to root
-git rev-parse --git-dir >/dev/null 2>&1 || die "Not in a git repository"
-cd "$(git rev-parse --show-toplevel)"
+  # Ensure we're in a git repository and change to root
+  git rev-parse --git-dir >/dev/null 2>&1 || die "Not in a git repository"
+  cd "$(git rev-parse --show-toplevel)"
 
-# Prune any orphaned worktree entries
-git worktree prune 2>/dev/null || true
+  # Prune any orphaned worktree entries
+  git worktree prune 2>/dev/null || true
 
-# Check if .bob is a registered worktree
-git worktree list | grep -q "\.bob" || { echo "✓ Bob Shell worktree not found (nothing to clean up)"; exit 0; }
+  # Check if .bob is a registered worktree
+  git worktree list | grep -q "\.bob" || { echo "✓ Bob Shell worktree not found (nothing to clean up)"; exit 0; }
 
-# Check for uncommitted changes
-git -C .bob diff-index --quiet HEAD -- 2>/dev/null || die "You have uncommitted changes in .bob/. Please commit or stash them first."
+  # Check for uncommitted changes
+  git -C .bob diff-index --quiet HEAD -- 2>/dev/null || die "You have uncommitted changes in .bob/. Please commit or stash them first."
 
-BACKUP_DIR="$PWD/.bob-migration-backup"
-[ -d "$BACKUP_DIR" ] || { echo "Creating backup directory at $BACKUP_DIR"; mkdir -p "$BACKUP_DIR"; }
+  BACKUP_DIR="$PWD/.bob-migration-backup"
+  [ -d "$BACKUP_DIR" ] || { echo "Creating backup directory at $BACKUP_DIR"; mkdir -p "$BACKUP_DIR"; }
 
-# Change to .bob worktree
-cd .bob
+  # Change to .bob worktree
+  cd .bob
 
-# Backup git-ignored content from .bob before cleanup
-echo "Backing up git-ignored content in .bob ..."
+  # Backup git-ignored content from .bob before cleanup
+  echo "Backing up git-ignored content in .bob ..."
 
-# backup ignored files
-git ls-files --others --ignored --exclude-standard | rsync -avR --files-from=- . "$BACKUP_DIR/"
+  # backup ignored files
+  git ls-files --others --ignored --exclude-standard | rsync -avR --files-from=- . "$BACKUP_DIR/"
 
-# remove the git worktree
-cd ..
-git worktree remove .bob
+  # remove the git worktree
+  cd ..
+  git worktree remove .bob
 
-# restore the backup
-mv .bob-migration-backup/ .bob 
+  # restore the backup
+  mv .bob-migration-backup/ .bob
 
-echo ""
-echo "Bob Shell worktree cleanup complete!"
-echo ""
-echo "To set up worktree again, run: scripts/setup-bob-worktrees.sh"
+  echo ""
+  echo "Bob Shell worktree cleanup complete!"
+  echo ""
+  echo "To set up worktree again, run: scripts/setup-bob-worktrees.sh"
+)
