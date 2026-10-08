@@ -50,7 +50,13 @@
     enforce_admins: false,
     required_pull_request_reviews: (
       if .required_pull_request_reviews then {
-        dismissal_restrictions:           .required_pull_request_reviews.dismissal_restrictions,
+        dismissal_restrictions: (
+          if .required_pull_request_reviews.dismissal_restrictions then {
+            users: (.required_pull_request_reviews.dismissal_restrictions.users | map(.login)),
+            teams: (.required_pull_request_reviews.dismissal_restrictions.teams | map(.slug)),
+            apps:  (.required_pull_request_reviews.dismissal_restrictions.apps  | map(.slug))
+          } else null end
+        ),
         dismiss_stale_reviews:            .required_pull_request_reviews.dismiss_stale_reviews,
         require_code_owner_reviews:       .required_pull_request_reviews.require_code_owner_reviews,
         required_approving_review_count:  .required_pull_request_reviews.required_approving_review_count,
