@@ -109,10 +109,11 @@ semantic logging helpers:
 
 ```sh
   exec 3>/dev/null 4>&1 5>&1 6>&2
-  log() { { [ $# -gt 0 ] && echo "$@"; } || cat; >&3; }
-  inf() { { [ $# -gt 0 ] && echo "$@"; } || cat; >&4; }
-  wrn() { { [ $# -gt 0 ] && echo "$@"; } || cat; >&5; }
-  err() { { [ $# -gt 0 ] && echo "$@"; } || cat; >&6; }
+  echocat() { { [ $# -gt 0 ] && echo "$@"; } || cat; }
+  log() { echocat "$@" >&3; }
+  inf() { echocat "$@" >&4; }
+  wrn() { echocat "$@" >&5; }
+  err() { echocat "$@" >&6; }
 ```
 
 Only add this machinery when the script genuinely needs multiple verbosity levels.
