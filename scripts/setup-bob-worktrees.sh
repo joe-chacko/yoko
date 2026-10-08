@@ -20,8 +20,6 @@
 (
   # Stop on first unexpected error
   set -e
-  # Disable globbing
-  set -f
 
   die() {
     echo "$@" >&2
