@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 IBM Corporation and others.
+ * Copyright 2026 IBM Corporation and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,14 @@ public enum ProviderLocator {;
     static private ProviderRegistry registry;
 
     public static void setRegistry(ProviderRegistry registry) {
+        if (registry == null) throw new IllegalStateException("Use resetRegistryForTesting() to clear the registry");
+        if (ProviderLocator.registry != null) throw new IllegalStateException("Registry is already set");
         ProviderLocator.registry = registry;
+    }
+
+    /** For test use only — clears the static registry without the null guard. */
+    static void resetRegistryForTesting() {
+        ProviderLocator.registry = null;
     }
 
     /**
