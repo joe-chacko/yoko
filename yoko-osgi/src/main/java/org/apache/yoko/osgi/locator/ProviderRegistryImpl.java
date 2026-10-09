@@ -20,6 +20,7 @@ package org.apache.yoko.osgi.locator;
 import org.apache.yoko.osgi.ProviderLocator;
 import org.apache.yoko.osgi.ProviderRegistry;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Deactivate;
 
 import java.security.PrivilegedAction;
@@ -44,13 +45,19 @@ import static java.util.Collections.synchronizedSet;
 @Component(immediate = true, service = {Register.class, ProviderRegistry.class})
 public class ProviderRegistryImpl implements ProviderRegistry, Register {
 
-    ProviderRegistryImpl() {
+    @Activate
+    void install() {
         ProviderLocator.setRegistry(this);
     }
 
     @Deactivate
-    void deactivate() {
+    void uninstall() {
         ProviderLocator.clearRegistry(this);
+    }
+
+    /** For test use only — resets the static registry unconditionally. */
+    static void resetForTesting() {
+        ProviderLocator.resetRegistryForTesting();
     }
 
     private static final Logger log = Logger.getLogger(ProviderRegistryImpl.class.getName());

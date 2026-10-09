@@ -20,12 +20,15 @@ package org.apache.yoko.osgi.locator;
 /** Test fixture — provides direct package-private access to install and uninstall a registry impl. */
 public enum ProviderRegistryFixture {;
     public static ProviderRegistryImpl install() {
-        return new ProviderRegistryImpl();
+        ProviderRegistryImpl reg = new ProviderRegistryImpl();
+        ProviderRegistryImpl.resetForTesting();
+        reg.install();
+        return reg;
     }
 
     public static void uninstall(ProviderRegistryImpl registry) {
         if (registry != null) {
-            registry.deactivate();
+            registry.uninstall();
         }
     }
 }

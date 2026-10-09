@@ -49,7 +49,7 @@ public enum ProviderLocator {;
     }
 
     /** For test use only — clears the static registry without the null guard. */
-    static void resetRegistryForTesting() {
+    public static void resetRegistryForTesting() {
         ProviderLocator.registry = null;
     }
 
