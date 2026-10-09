@@ -20,6 +20,7 @@ package org.apache.yoko.osgi.locator;
 import org.apache.yoko.osgi.ProviderLocator;
 import org.apache.yoko.osgi.ProviderRegistry;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 
 import java.security.PrivilegedAction;
 import java.util.HashMap;
@@ -43,8 +44,13 @@ import static java.util.Collections.synchronizedSet;
 @Component(immediate = true, service = {Register.class, ProviderRegistry.class})
 public class ProviderRegistryImpl implements ProviderRegistry, Register {
 
-    public ProviderRegistryImpl() {
+    ProviderRegistryImpl() {
         ProviderLocator.setRegistry(this);
+    }
+
+    @Deactivate
+    void deactivate() {
+        ProviderLocator.clearRegistry(this);
     }
 
     private static final Logger log = Logger.getLogger(ProviderRegistryImpl.class.getName());

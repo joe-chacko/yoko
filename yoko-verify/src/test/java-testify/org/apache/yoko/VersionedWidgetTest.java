@@ -24,7 +24,7 @@ import org.apache.yoko.io.WriteBuffer;
 import org.apache.yoko.orb.CORBA.YokoInputStream;
 import org.apache.yoko.orb.CORBA.YokoOutputStream;
 import org.apache.yoko.orb.OB.SendingContextRuntimes;
-import org.apache.yoko.osgi.ProviderLocatorFixture;
+import org.apache.yoko.osgi.locator.ProviderLocatorFixture;
 import org.apache.yoko.osgi.locator.ProviderRegistryImpl;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -98,12 +98,12 @@ class WidgetProviderLoaderTest extends WidgetMarshallingTest {
     Widget decode(YokoInputStream in, String widgetClassName, Loader context) {
         // Marshalling across versions will need a runtime codebase
         in.__setSendingContextRuntime(SendingContextRuntimes.LOCAL_CODE_BASE);
-        ProviderRegistryImpl reg = new ProviderRegistryImpl();
+        ProviderRegistryImpl reg = ProviderLocatorFixture.install();
         reg.registerPackages(context.newInstance("versioned.VersionedPackageProvider"));
         try {
             return (Widget) in.read_value();
         } finally {
-            ProviderLocatorFixture.resetRegistry();
+            ProviderLocatorFixture.uninstall(reg);
         }
     }
 }
@@ -129,7 +129,7 @@ class WidgetDeepStackLoaderTest extends WidgetMarshallingTest {
         // Marshalling across versions will need a runtime codebase
         in.__setSendingContextRuntime(SendingContextRuntimes.LOCAL_CODE_BASE);
         // Register the V0 package provider with the provider registry so it can be ignored in the call stack.
-        ProviderRegistryImpl reg = new ProviderRegistryImpl();
+        ProviderRegistryImpl reg = ProviderLocatorFixture.install();
         reg.registerPackages(Loader.V0.newInstance("versioned.VersionedPackageProvider"));
         // To insert an extra layer into the call stack, use the WidgetReader from the WRONG loader, V0.
         // NOTE: if we do not load something via the registry, it will never know about the class loader
@@ -140,7 +140,7 @@ class WidgetDeepStackLoaderTest extends WidgetMarshallingTest {
         try {
             return widgetReader.apply(in);
         } finally {
-            ProviderLocatorFixture.resetRegistry();
+            ProviderLocatorFixture.uninstall(reg);
         }
     }
 

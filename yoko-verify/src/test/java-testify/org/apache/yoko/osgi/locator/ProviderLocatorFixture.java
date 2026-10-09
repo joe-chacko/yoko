@@ -15,11 +15,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.apache.yoko.osgi;
+package org.apache.yoko.osgi.locator;
 
-/** Test fixture — provides access to the package-private registry reset. */
+/** Test fixture — provides direct package-private access to install and uninstall a registry impl. */
 public enum ProviderLocatorFixture {;
-    public static void resetRegistry() {
-        ProviderLocator.resetRegistryForTesting();
+    public static ProviderRegistryImpl install() {
+        return new ProviderRegistryImpl();
+    }
+
+    public static void uninstall(ProviderRegistryImpl registry) {
+        if (registry != null) {
+            registry.deactivate();
+        }
     }
 }

@@ -42,6 +42,12 @@ public enum ProviderLocator {;
         ProviderLocator.registry = registry;
     }
 
+    public static void clearRegistry(ProviderRegistry registry) {
+        if (registry != null && ProviderLocator.registry == registry) {
+            ProviderLocator.registry = null;
+        }
+    }
+
     /** For test use only — clears the static registry without the null guard. */
     static void resetRegistryForTesting() {
         ProviderLocator.registry = null;
